@@ -1,5 +1,26 @@
-<p>Bienvenido al Login</p>
-<input type="text" placeholder="Usuario" pInputText>
-<input type="password" placeholder="Contraseña" pInputText>
-<button pButton label="Iniciar Sesión" severity="info"></button>
-<a href="">Registrarse</a>
+<p-toast></p-toast>
+<div class="flex justify-content-center align-items-center min-h-screen">
+    <p-card header="Inicio de Sesión" [style]="{ width: '400px' }">
+        <form [formGroup]="formularioLogin" (ngSubmit)="iniciarSesion()" class="flex flex-column gap-3">
+            <div class="flex flex-column gap-2">
+                <label for="usuario">Usuario</label>
+                <input pInputText id="usuario" formControlName="usuario" placeholder="Ingrese su usuario"
+                    class="w-full" />
+            </div>
+
+            <div class="flex flex-column gap-2">
+                <label for="contrasenia">Contraseña</label>
+                <p-password id="contrasenia" formControlName="contrasenia" [toggleMask]="true" [feedback]="false"
+                    placeholder="Ingrese su contraseña" styleClass="w-full" inputStyleClass="w-full"></p-password>
+            </div>
+
+            <button pButton type="submit" label="Ingresar" icon="pi pi-sign-in" [loading]="cargando"
+                class="w-full mt-2"></button>
+
+            <div class="text-center mt-3">
+                <span>¿No tienes cuenta? </span>
+                <a routerLink="/register">Regístrate aquí</a>
+            </div>
+        </form>
+    </p-card>
+</div>

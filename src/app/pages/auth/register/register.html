@@ -1,6 +1,100 @@
-<p>Bienvenido al Registro</p>
-<input type="text" placeholder="Usuario" pInputText>
-<input type="password" placeholder="Contraseña" pInputText>
-<input type="password" placeholder="Confirmar Contraseña" pInputText>
-<button pButton label="Registrarse" severity="info"></button>
-<a href="">Iniciar Sesión</a>
+<p-toast></p-toast>
+<div class="flex justify-content-center align-items-center min-h-screen py-5">
+    <p-card header="Crear Cuenta" [style]="{ width: '500px' }">
+        <form [formGroup]="formularioRegistro" (ngSubmit)="registrarUsuario()" class="flex flex-column gap-3">
+
+            <!-- Usuario -->
+            <div class="flex flex-column gap-2">
+                <label for="usuario">Usuario</label>
+                <input pInputText id="usuario" formControlName="usuario" placeholder="Ej: santi123" />
+                <p-message
+                    *ngIf="formularioRegistro.get('usuario')?.invalid && formularioRegistro.get('usuario')?.touched"
+                    severity="error" text="El usuario es requerido"></p-message>
+            </div>
+
+            <!-- Nombre Completo -->
+            <div class="flex flex-column gap-2">
+                <label for="nombreCompleto">Nombre Completo</label>
+                <input pInputText id="nombreCompleto" formControlName="nombreCompleto"
+                    placeholder="Ingrese su nombre" />
+                <p-message
+                    *ngIf="formularioRegistro.get('nombreCompleto')?.invalid && formularioRegistro.get('nombreCompleto')?.touched"
+                    severity="error" text="El nombre es requerido"></p-message>
+            </div>
+
+            <!-- Email -->
+            <div class="flex flex-column gap-2">
+                <label for="email">Correo Electrónico</label>
+                <input pInputText id="email" formControlName="email" placeholder="ejemplo@correo.com" />
+                <p-message *ngIf="formularioRegistro.get('email')?.invalid && formularioRegistro.get('email')?.touched"
+                    severity="error" text="Ingrese un correo válido"></p-message>
+            </div>
+
+            <div class="grid">
+                <!-- Contraseña -->
+                <div class="col-12 md:col-6 flex flex-column gap-2">
+                    <label for="contrasenia">Contraseña</label>
+                    <p-password id="contrasenia" formControlName="contrasenia" [toggleMask]="true"
+                        placeholder="Mín. 10 caracteres" styleClass="w-full" inputStyleClass="w-full">
+                        <ng-template #footer>
+                            <ul class="pl-2 ml-2 mt-0" style="line-height: 1.5">
+                                <li>Mínimo 10 caracteres</li>
+                                <li>Al menos un símbolo especial</li>
+                            </ul>
+                        </ng-template>
+                    </p-password>
+                    <p-message
+                        *ngIf="formularioRegistro.get('contrasenia')?.invalid && formularioRegistro.get('contrasenia')?.touched"
+                        severity="error" text="Debe cumplir los requisitos"></p-message>
+                </div>
+
+                <!-- Confirmar Contraseña -->
+                <div class="col-12 md:col-6 flex flex-column gap-2">
+                    <label for="confirmarContrasenia">Confirmar</label>
+                    <p-password id="confirmarContrasenia" formControlName="confirmarContrasenia" [toggleMask]="true"
+                        [feedback]="false" placeholder="Repita contraseña" styleClass="w-full"
+                        inputStyleClass="w-full"></p-password>
+                    <p-message
+                        *ngIf="formularioRegistro.hasError('noCoincide') && formularioRegistro.get('confirmarContrasenia')?.touched"
+                        severity="error" text="Las contraseñas no coinciden"></p-message>
+                </div>
+            </div>
+
+            <!-- Dirección -->
+            <div class="flex flex-column gap-2">
+                <label for="direccion">Dirección</label>
+                <input pInputText id="direccion" formControlName="direccion" placeholder="Calle, Ciudad, Estado" />
+            </div>
+
+            <div class="grid">
+                <!-- Fecha de Nacimiento -->
+                <div class="col-12 md:col-6 flex flex-column gap-2">
+                    <label for="fechaNacimiento">Fecha Nacimiento</label>
+                    <p-datepicker id="fechaNacimiento" formControlName="fechaNacimiento" [showIcon]="true"
+                        dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body"
+                        styleClass="w-full"></p-datepicker>
+                    <p-message *ngIf="formularioRegistro.get('fechaNacimiento')?.hasError('menorDeEdad')"
+                        severity="error" variant="simple" text="Debes ser mayor de 18 años"></p-message>
+                </div>
+
+
+                <!-- Teléfono -->
+                <div class="col-12 md:col-6 flex flex-column gap-2">
+                    <label for="telefono">Teléfono</label>
+                    <input pInputText id="telefono" formControlName="telefono" placeholder="Solo números" />
+                    <p-message
+                        *ngIf="formularioRegistro.get('telefono')?.invalid && formularioRegistro.get('telefono')?.touched"
+                        severity="error" text="Solo números permitidos"></p-message>
+                </div>
+            </div>
+
+            <button pButton type="submit" label="Registrarse" icon="pi pi-user-plus" [loading]="cargando"
+                [disabled]="formularioRegistro.invalid" class="w-full mt-3"></button>
+
+            <div class="text-center mt-2">
+                <a routerLink="/login">¿Ya tienes cuenta? Inicia sesión</a>
+            </div>
+
+        </form>
+    </p-card>
+</div>

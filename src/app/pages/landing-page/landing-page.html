@@ -1,1 +1,13 @@
-<p>Bienvenido al Langin Page</p>
+<div class="flex flex-column align-items-center justify-content-center min-h-screen bg-primary-reverse p-5">
+    <p-card header="Bienvenido al Sistema ERS" [style]="{ width: '600px', 'text-align': 'center' }">
+        <p class="m-0 mb-4">
+            Esta es la landing page. Por favor, inicie sesión o regístrese para continuar.
+        </p>
+        <div class="flex gap-3 justify-content-center">
+            <button pButton label="Iniciar Sesión" icon="pi pi-sign-in" routerLink="/login"
+                class="p-button-info"></button>
+            <button pButton label="Registrarse" icon="pi pi-user-plus" routerLink="/register"
+                class="p-button-secondary"></button>
+        </div>
+    </p-card>
+</div>
