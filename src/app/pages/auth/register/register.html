@@ -81,10 +81,10 @@
                 <!-- Teléfono -->
                 <div class="col-12 md:col-6 flex flex-column gap-2">
                     <label for="telefono">Teléfono</label>
-                    <input pInputText id="telefono" formControlName="telefono" placeholder="Solo números" />
+                    <input pInputText id="telefono" formControlName="telefono" placeholder="10 dígitos numéricos" />
                     <p-message
                         *ngIf="formularioRegistro.get('telefono')?.invalid && formularioRegistro.get('telefono')?.touched"
-                        severity="error" text="Solo números permitidos"></p-message>
+                        severity="error" text="Debe ser exactamente 10 números"></p-message>
                 </div>
             </div>
 

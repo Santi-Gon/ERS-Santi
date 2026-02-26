@@ -62,8 +62,7 @@ export class Login {
           summary: 'Éxito',
           detail: 'Bienvenido al sistema'
         });
-        // Aquí podrías redirigir
-        // this.router.navigate(['/dashboard']);
+        this.router.navigate(['/home']);
       } else {
         this.messageService.add({
           severity: 'error',

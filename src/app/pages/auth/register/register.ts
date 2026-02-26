@@ -52,7 +52,7 @@ export class Register {
       confirmarContrasenia: ['', Validators.required],
       direccion: ['', Validators.required],
       fechaNacimiento: [null, [Validators.required, this.validarMayoriaEdad]],
-      telefono: ['', [Validators.required, Validators.pattern('^[0-9]*$')]]
+      telefono: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]]
     }, { validators: this.confirmarContraseniasIguales });
   }
 
