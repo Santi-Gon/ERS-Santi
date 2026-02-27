@@ -1,53 +1,27 @@
-<div class="flex flex-column h-screen bg-white border-right-1 surface-border shadow-4 transition-all transition-duration-300"
-    style="width: 280px; position: sticky; top: 0;">
-
-    <!-- Header / Logo Area -->
-    <div class="flex align-items-center p-4 border-bottom-1 surface-border bg-primary-reverse border-round-top">
-        <div
-            class="flex align-items-center justify-content-center bg-primary border-round p-2 shadow-2 mr-3 text-white">
-            <i class="pi pi-box text-2xl"></i>
-        </div>
-        <div class="flex flex-column">
-            <span class="text-xl font-bold text-900">ERS System</span>
-            <span class="text-sm text-600 font-medium">Gestión Académica</span>
-        </div>
+<div class="gemini-sidebar">
+    <!-- Header Area -->
+    <div class="p-4 flex flex-column mt-2">
+        <a pRipple routerLink="/home" class="gemini-btn-primary shadow-2 align-self-start mb-4 p-ripple"
+            style="padding: 0.8rem 1.2rem; min-width: 140px;">
+            <i class="pi pi-home text-lg mr-3"></i>
+            <span class="font-medium text-base">Inicio</span>
+        </a>
     </div>
 
-    <!-- User Profile Snippet (Avatar) -->
-    <div
-        class="p-3 border-bottom-1 surface-border m-3 border-round bg-indigo-50 shadow-1 flex align-items-center cursor-pointer hover:bg-indigo-100 transition-colors">
-        <p-avatar image="https://primefaces.org/cdn/primeng/images/avatar/amyelsner.png" shape="circle" size="large"
-            class="mr-3 shadow-2"></p-avatar>
-        <div class="flex flex-column">
-            <span class="font-bold text-900">Admin</span>
-            <span class="text-sm text-500">Administrador</span>
-        </div>
-        <i class="pi pi-chevron-down ml-auto text-500"></i>
-    </div>
-
-    <!-- Navigation Menu -->
+    <!-- Middle Spacer Area -->
     <div class="flex-grow-1 px-3 py-2 overflow-y-auto custom-scrollbar">
-        <ul class="list-none p-0 m-0">
-            <li class="text-xs text-500 font-semibold mb-2 ml-2 uppercase letter-spacing-1">Principal</li>
+    </div>
 
-            <li *ngFor="let item of menuItems" class="mb-1">
-                <a pRipple [routerLink]="item.routerLink"
-                    routerLinkActive="bg-primary-50 text-primary border-primary font-bold shadow-1"
-                    [routerLinkActiveOptions]="{exact: true}"
-                    class="flex align-items-center cursor-pointer p-3 border-round transition-colors transition-duration-200 no-underline text-700 hover:surface-hover border-left-3 border-transparent hover:border-300">
-                    <i [class]="item.icon + ' mr-3 text-xl'"></i>
-                    <span class="font-medium text-lg">{{ item.label }}</span>
+    <!-- Bottom Area: Profile & Logout -->
+    <div class="p-3 mb-2">
+        <ul class="list-none p-0 m-0">
+            <li>
+                <a pRipple routerLink="/login" class="gemini-item p-ripple hover:bg-red-900 transition-colors"
+                    style="color: #ffb4ab;">
+                    <i class="pi pi-power-off gemini-icon"></i>
+                    <span class="font-medium">Cerrar Sesión</span>
                 </a>
             </li>
         </ul>
-    </div>
-
-    <!-- Logout Area -->
-    <div class="p-3 border-top-1 surface-border mt-auto">
-        <a pRipple routerLink="/login"
-            class="flex align-items-center cursor-pointer p-3 border-round text-red-500 hover:bg-red-50 transition-all transition-duration-200 no-underline shadow-1 border-1 border-red-100 hover:border-red-300">
-            <i class="pi pi-power-off mr-3 text-xl"></i>
-            <span class="font-bold">Cerrar Sesión</span>
-        </a>
     </div>
 </div>

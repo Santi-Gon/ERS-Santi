@@ -1,6 +1,8 @@
-<div class="flex min-h-screen bg-gray-50">
-    <app-sidebar></app-sidebar>
-    <main class="flex-grow-1 p-5 overflow-y-auto">
+<div class="gemini-layout">
+    <div class="flex-shrink-0">
+        <app-sidebar></app-sidebar>
+    </div>
+    <main class="gemini-main-content custom-scrollbar">
         <router-outlet></router-outlet>
     </main>
 </div>

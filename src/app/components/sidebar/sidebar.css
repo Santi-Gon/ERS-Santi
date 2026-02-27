@@ -1,16 +1,81 @@
+.gemini-sidebar {
+    background-color: #1e1f20;
+    width: 260px;
+    height: 100vh;
+    color: #e3e3e3;
+    display: flex;
+    flex-direction: column;
+}
+
+.gemini-btn-primary {
+    background-color: #2b2d31; 
+    border-radius: 999px;
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #e3e3e3;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.gemini-btn-primary:hover {
+    background-color: #3b3d41;
+}
+
+.gemini-item {
+    border-radius: 999px;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #c4c7c5;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.gemini-item:hover {
+    background-color: #303134;
+    color: #e3e3e3;
+}
+
+.gemini-item.active {
+    background-color: #414347;
+    color: #e3e3e3;
+    font-weight: 500;
+}
+
+.gemini-icon {
+    font-size: 1.2rem;
+    margin-right: 0.8rem;
+}
+
+/* Logo icon mimicking Gemini Logo wrapper */
+.gemini-logo-wrapper {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #a8c7fa;
+    color: #041e49;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.8rem;
+    font-weight: bold;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+    width: 6px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+    background: transparent;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
-  border-radius: 4px;
+    background: #555;
+    border-radius: 10px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #cbd5e1;
+    background: #777;
 }
