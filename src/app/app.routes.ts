@@ -23,6 +23,14 @@ export const routes: Routes = [
       {
         path: 'home',
         loadComponent: () => import('./pages/home/home').then(m => m.Home)
+      },
+      {
+        path: 'user',
+        loadComponent: () => import('./pages/user/user').then(m => m.User)
+      },
+      {
+        path: 'group',
+        loadComponent: () => import('./pages/group/group').then(m => m.Group)
       }
     ]
   },

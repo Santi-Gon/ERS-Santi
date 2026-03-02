@@ -26,14 +26,16 @@
 
 .gemini-item {
     border-radius: 999px;
-    padding: 0.6rem 1rem;
+    padding: 0.5rem 1rem;
     display: flex;
     align-items: center;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease-in-out;
     color: #c4c7c5;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    align-self: flex-start;
+    margin-bottom: 0.5rem;
 }
 
 .gemini-item:hover {
@@ -42,14 +44,14 @@
 }
 
 .gemini-item.active {
-    background-color: #414347;
-    color: #e3e3e3;
-    font-weight: 500;
+    background-color: #4fd1c5; /* Azul turquesa claro */
+    color: #131314;
+    font-weight: 600;
 }
 
 .gemini-icon {
-    font-size: 1.2rem;
-    margin-right: 0.8rem;
+    font-size: 1.1rem;
+    margin-right: 0.5rem; /* Menos espacio entre icono y texto */
 }
 
 /* Logo icon mimicking Gemini Logo wrapper */

@@ -1,0 +1,42 @@
+<div class="p-4">
+    <div class="mb-5 flex align-items-center">
+        <p-avatar icon="pi pi-user" size="xlarge" shape="circle" class="mr-3 p-avatar-xl"></p-avatar>
+        <div>
+            <h1 class="m-0 text-3xl font-bold">{{ userInfo.fullName }}</h1>
+            <span class="text-500 text-lg">&#64;{{ userInfo.username }}</span>
+        </div>
+    </div>
+
+    <p-card header="Información del Usuario" styleClass="shadow-2 border-round-xl">
+        <div class="grid">
+            <div class="col-12 md:col-6 mb-3">
+                <span class="block text-500 font-medium mb-1">Nombre Completo</span>
+                <span class="block text-900 text-lg">{{ userInfo.fullName }}</span>
+            </div>
+            <div class="col-12 md:col-6 mb-3">
+                <span class="block text-500 font-medium mb-1">Usuario</span>
+                <span class="block text-900 text-lg">{{ userInfo.username }}</span>
+            </div>
+            <div class="col-12 md:col-6 mb-3">
+                <span class="block text-500 font-medium mb-1">Correo Electrónico</span>
+                <span class="block text-900 text-lg">{{ userInfo.email }}</span>
+            </div>
+            <div class="col-12 md:col-6 mb-3">
+                <span class="block text-500 font-medium mb-1">Dirección</span>
+                <span class="block text-900 text-lg">{{ userInfo.address }}</span>
+            </div>
+            <div class="col-12 md:col-4 mb-3">
+                <span class="block text-500 font-medium mb-1">Fecha de Nacimiento</span>
+                <span class="block text-900 text-lg">{{ userInfo.birthDate }}</span>
+            </div>
+            <div class="col-12 md:col-4 mb-3">
+                <span class="block text-500 font-medium mb-1">Edad</span>
+                <span class="block text-900 text-lg">{{ userInfo.age }} años</span>
+            </div>
+            <div class="col-12 md:col-4 mb-3">
+                <span class="block text-500 font-medium mb-1">Teléfono</span>
+                <span class="block text-900 text-lg">{{ userInfo.phone }}</span>
+            </div>
+        </div>
+    </p-card>
+</div>

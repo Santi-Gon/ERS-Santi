@@ -13,6 +13,8 @@ import { AvatarModule } from 'primeng/avatar';
 })
 export class SidebarComponent {
   menuItems = [
-    { label: 'Inicio', icon: 'pi pi-home', routerLink: '/home' }
+    { label: 'Inicio', icon: 'pi pi-home', routerLink: '/home' },
+    { label: 'Grupos', icon: 'pi pi-users', routerLink: '/group' },
+    { label: 'Usuarios', icon: 'pi pi-user', routerLink: '/user' }
   ];
 }
