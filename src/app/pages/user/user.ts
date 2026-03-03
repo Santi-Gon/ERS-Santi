@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { AvatarModule } from 'primeng/avatar';
+import { FieldsetModule } from 'primeng/fieldset';
 
 @Component({
   selector: 'app-user',
   standalone: true,
-  imports: [CommonModule, CardModule, AvatarModule],
+  imports: [CommonModule, CardModule, AvatarModule, FieldsetModule],
   templateUrl: './user.html',
   styleUrl: './user.css',
 })

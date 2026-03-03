@@ -1,7 +1,7 @@
 <div class="gemini-sidebar">
     <!-- Header Area -->
-    <div class="px-4 py-5 flex flex-column">
-        <span class="text-2xl font-bold text-white mb-4 letter-spacing-1">ERP-Santi</span>
+    <div class="px-4 py-5 mt-3 mb-2 flex justify-content-center align-items-center text-center">
+        <span class="text-3xl font-bold text-white letter-spacing-1">ERP-Santi</span>
     </div>
 
     <!-- Navigation Menu Area -->
@@ -10,7 +10,7 @@
             @for (item of menuItems; track item.label) {
             <li>
                 <a pRipple [routerLink]="item.routerLink" routerLinkActive="active"
-                    [routerLinkActiveOptions]="{exact: true}" class="gemini-item p-ripple">
+                    [routerLinkActiveOptions]="{exact: true}" class="gemini-item p-ripple mx-3">
                     <i [class]="item.icon + ' gemini-icon'"></i>
                     <span class="font-medium">{{ item.label }}</span>
                 </a>
@@ -20,17 +20,18 @@
     </div>
 
     <!-- Bottom Area: Logout & Version -->
-    <div class="p-3 mb-2 flex flex-column">
-        <ul class="list-none p-0 m-0">
+    <div class="p-3 mb-3 flex flex-column mt-auto w-full">
+        <ul class="list-none p-0 m-0 w-full mb-4">
             <li>
-                <a pRipple routerLink="/login" class="gemini-item p-ripple hover:bg-red-900 transition-colors"
-                    style="color: #ffb4ab;">
+                <a pRipple routerLink="/login"
+                    class="gemini-item p-ripple hover:bg-red-900 transition-colors w-full mx-3"
+                    style="color: #ffb4ab; width: calc(100% - 2rem) !important;">
                     <i class="pi pi-power-off gemini-icon"></i>
                     <span class="font-medium">Cerrar Sesión</span>
                 </a>
             </li>
         </ul>
-        <div class="mt-4 px-3 text-xs text-gray-500 font-medium">
+        <div class="align-self-start ml-4 mb-2 text-xs text-gray-500 font-medium">
             v0.5.1
         </div>
     </div>

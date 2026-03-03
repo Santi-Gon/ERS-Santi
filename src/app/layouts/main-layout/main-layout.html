@@ -1,8 +1,17 @@
-<div class="gemini-layout">
-    <div class="flex-shrink-0">
-        <app-sidebar></app-sidebar>
+<div class="gemini-layout flex-column">
+    <!-- Topbar to open sidebar -->
+    <div class="flex align-items-center px-4 py-3 surface-ground border-bottom-1 surface-border">
+        <p-button icon="pi pi-bars" (onClick)="sidebarVisible = true" [text]="true" [rounded]="true"
+            styleClass="p-button-secondary mr-3" ariaLabel="Menu"></p-button>
+        <span class="text-2xl font-bold text-white letter-spacing-1">ERP-Santi</span>
     </div>
-    <main class="gemini-main-content custom-scrollbar">
+
+    <!-- Sidebar Wrapper -->
+    <p-drawer [(visible)]="sidebarVisible" styleClass="p-0 border-none" [showCloseIcon]="false">
+        <app-sidebar></app-sidebar>
+    </p-drawer>
+
+    <main class="gemini-main-content custom-scrollbar flex-grow-1">
         <router-outlet></router-outlet>
     </main>
 </div>

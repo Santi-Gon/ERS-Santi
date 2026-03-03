@@ -8,34 +8,41 @@
     </div>
 
     <p-card header="Información del Usuario" styleClass="shadow-2 border-round-xl">
-        <div class="grid">
+        <div class="grid mt-2">
             <div class="col-12 md:col-6 mb-3">
-                <span class="block text-500 font-medium mb-1">Nombre Completo</span>
-                <span class="block text-900 text-lg">{{ userInfo.fullName }}</span>
+                <p-fieldset legend="Nombre Completo" styleClass="h-full">
+                    <span class="block text-900 text-xl font-semibold">{{ userInfo.fullName }}</span>
+                </p-fieldset>
             </div>
             <div class="col-12 md:col-6 mb-3">
-                <span class="block text-500 font-medium mb-1">Usuario</span>
-                <span class="block text-900 text-lg">{{ userInfo.username }}</span>
+                <p-fieldset legend="Usuario" styleClass="h-full">
+                    <span class="block text-900 text-xl font-semibold">{{ userInfo.username }}</span>
+                </p-fieldset>
             </div>
             <div class="col-12 md:col-6 mb-3">
-                <span class="block text-500 font-medium mb-1">Correo Electrónico</span>
-                <span class="block text-900 text-lg">{{ userInfo.email }}</span>
+                <p-fieldset legend="Correo Electrónico" styleClass="h-full">
+                    <span class="block text-900 text-xl font-semibold">{{ userInfo.email }}</span>
+                </p-fieldset>
             </div>
             <div class="col-12 md:col-6 mb-3">
-                <span class="block text-500 font-medium mb-1">Dirección</span>
-                <span class="block text-900 text-lg">{{ userInfo.address }}</span>
+                <p-fieldset legend="Dirección" styleClass="h-full">
+                    <span class="block text-900 text-xl font-semibold">{{ userInfo.address }}</span>
+                </p-fieldset>
             </div>
             <div class="col-12 md:col-4 mb-3">
-                <span class="block text-500 font-medium mb-1">Fecha de Nacimiento</span>
-                <span class="block text-900 text-lg">{{ userInfo.birthDate }}</span>
+                <p-fieldset legend="Fecha de Nacimiento" styleClass="h-full">
+                    <span class="block text-900 text-xl font-semibold">{{ userInfo.birthDate }}</span>
+                </p-fieldset>
             </div>
             <div class="col-12 md:col-4 mb-3">
-                <span class="block text-500 font-medium mb-1">Edad</span>
-                <span class="block text-900 text-lg">{{ userInfo.age }} años</span>
+                <p-fieldset legend="Edad" styleClass="h-full">
+                    <span class="block text-900 text-xl font-semibold">{{ userInfo.age }} años</span>
+                </p-fieldset>
             </div>
             <div class="col-12 md:col-4 mb-3">
-                <span class="block text-500 font-medium mb-1">Teléfono</span>
-                <span class="block text-900 text-lg">{{ userInfo.phone }}</span>
+                <p-fieldset legend="Teléfono" styleClass="h-full">
+                    <span class="block text-900 text-xl font-semibold">{{ userInfo.phone }}</span>
+                </p-fieldset>
             </div>
         </div>
     </p-card>
