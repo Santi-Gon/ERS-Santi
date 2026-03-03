@@ -1,16 +1,102 @@
 <div class="p-4">
-    <div class="mb-5">
-        <h1 class="text-3xl font-bold m-0 mb-2">Total</h1>
-        <span class="text-600 text-2xl font-medium">{{ totalCount }}</span>
+    <!-- Header with Action Button -->
+    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-5">
+        <div class="mb-3 md:mb-0">
+            <h1 class="text-3xl font-bold m-0 mb-2">Total de Grupos</h1>
+            <span class="text-600 text-2xl font-medium">{{ totalCount }}</span>
+        </div>
+        <div class="my-3">
+            <p-button icon="pi pi-plus" label="Nuevo Grupo" (onClick)="openNew()"
+                styleClass="p-button-success px-4 py-2 text-lg font-medium"></p-button>
+        </div>
     </div>
 
-    <div>
-        <h2 class="text-2xl font-bold m-0 mb-3">Advance</h2>
-        <p-card styleClass="shadow-2 border-round-xl" [style]="{ 'min-height': '300px' }">
-            <!-- Empty card as requested -->
-            <div class="flex align-items-center justify-content-center h-full text-500">
-                Información de avances (próximamente)
+    <!-- Group Table -->
+    <p-card styleClass="shadow-2 border-round-xl">
+        <p-table [value]="groups" [rows]="10" [paginator]="true" responsiveLayout="scroll" [rowHover]="true"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="text-center font-bold">Nivel</th>
+                    <th class="font-bold">Nombre</th>
+                    <th class="font-bold">Autor</th>
+                    <th class="text-center font-bold">Integrantes</th>
+                    <th class="text-center font-bold">Tickets</th>
+                    <th class="text-center font-bold">Acciones</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-g>
+                <tr>
+                    <td class="text-center"><span
+                            class="font-medium px-3 py-1 bg-primary-100 text-primary-900 border-round">{{ g.nivel
+                            }}</span></td>
+                    <td class="font-semibold">{{ g.nombre }}</td>
+                    <td>{{ g.autor }}</td>
+                    <td class="text-center">{{ g.integrantes }}</td>
+                    <td class="text-center">{{ g.tickets }}</td>
+                    <td class="text-center">
+                        <div class="flex justify-content-center gap-2">
+                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
+                                (onClick)="editGroup(g)"></p-button>
+                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+                                (onClick)="deleteGroup(g)"></p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-card>
+
+    <!-- CRUD Dialog (Modal) Form -->
+    <p-dialog [(visible)]="groupDialog" [style]="{width: '550px'}" header="Detalles del Grupo" [modal]="true"
+        styleClass="p-fluid shadow-6" [dismissableMask]="true">
+        <ng-template pTemplate="content">
+            <div class="p-3">
+                <div class="field mb-4">
+                    <label for="nombre" class="font-bold mb-2 block">Nombre del Grupo</label>
+                    <input type="text" pInputText id="nombre" [(ngModel)]="group.nombre" required autofocus
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !group.nombre}" class="w-full p-3" />
+                    <small class="p-error block mt-2" *ngIf="submitted && !group.nombre">El nombre es requerido.</small>
+                </div>
+
+                <div class="field mb-4">
+                    <label for="autor" class="font-bold mb-2 block">Autor</label>
+                    <input type="text" pInputText id="autor" [(ngModel)]="group.autor" class="w-full p-3" />
+                </div>
+
+                <div class="formgrid grid">
+                    <div class="field col-12 md:col-4 mb-4">
+                        <label for="nivel" class="font-bold mb-2 block">Nivel</label>
+                        <p-inputNumber id="nivel" [(ngModel)]="group.nivel" [showButtons]="true" [min]="1" [max]="10"
+                            styleClass="w-full"></p-inputNumber>
+                    </div>
+                    <div class="field col-12 md:col-4 mb-4">
+                        <label for="integrantes" class="font-bold mb-2 block">Integrantes</label>
+                        <p-inputNumber id="integrantes" [(ngModel)]="group.integrantes" [showButtons]="true" [min]="0"
+                            styleClass="w-full"></p-inputNumber>
+                    </div>
+                    <div class="field col-12 md:col-4 mb-4">
+                        <label for="tickets" class="font-bold mb-2 block">Tickets</label>
+                        <p-inputNumber id="tickets" [(ngModel)]="group.tickets" [showButtons]="true" [min]="0"
+                            styleClass="w-full"></p-inputNumber>
+                    </div>
+                </div>
+
+                <div class="field mb-2">
+                    <label for="descripcion" class="font-bold mb-2 block">Descripción</label>
+                    <textarea id="descripcion" pInputText [(ngModel)]="group.descripcion" rows="3"
+                        class="w-full p-3"></textarea>
+                </div>
             </div>
-        </p-card>
-    </div>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <div class="flex justify-content-center gap-3 pt-3 pb-2 w-full">
+                <p-button label="Cancelar" icon="pi pi-times" [text]="true" (onClick)="hideDialog()"
+                    styleClass="p-button-secondary px-5 py-2"></p-button>
+                <p-button label="Guardar" icon="pi pi-check" (onClick)="saveGroup()"
+                    styleClass="p-button-primary px-5 py-2"></p-button>
+            </div>
+        </ng-template>
+    </p-dialog>
 </div>
