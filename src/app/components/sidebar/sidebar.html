@@ -8,13 +8,23 @@
     <div class="flex-grow-1 px-3 py-2 overflow-y-auto custom-scrollbar flex flex-column">
         <ul class="list-none p-0 m-0 flex flex-column">
             @for (item of menuItems; track item.label) {
-            <li>
-                <a pRipple [routerLink]="item.routerLink" routerLinkActive="active"
-                    [routerLinkActiveOptions]="{exact: true}" class="gemini-item p-ripple mx-3">
-                    <i [class]="item.icon + ' gemini-icon'"></i>
-                    <span class="font-medium">{{ item.label }}</span>
-                </a>
-            </li>
+                @if (!item.permissions) {
+                <li>
+                    <a pRipple [routerLink]="item.routerLink" routerLinkActive="active"
+                        [routerLinkActiveOptions]="{exact: true}" class="gemini-item p-ripple mx-3">
+                        <i [class]="item.icon + ' gemini-icon'"></i>
+                        <span class="font-medium">{{ item.label }}</span>
+                    </a>
+                </li>
+                } @else {
+                <li *appHasPermission="item.permissions || []"> 
+                    <a pRipple [routerLink]="item.routerLink" routerLinkActive="active"
+                        [routerLinkActiveOptions]="{exact: true}" class="gemini-item p-ripple mx-3">
+                        <i [class]="item.icon + ' gemini-icon'"></i>
+                        <span class="font-medium">{{ item.label }}</span>
+                    </a>
+                </li>
+                }
             }
         </ul>
     </div>

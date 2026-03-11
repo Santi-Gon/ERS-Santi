@@ -1,51 +1,77 @@
 <div class="p-4">
     <!-- Header with Action Button -->
-    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-5">
-        <div class="mb-3 md:mb-0">
-            <h1 class="text-3xl font-bold m-0 mb-2">Total de Grupos</h1>
-            <span class="text-600 text-2xl font-medium">{{ totalCount }}</span>
+    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-6">
+        <div class="mb-3 md:mb-0 flex align-items-center gap-2">
+            <h1 class="text-3xl font-bold m-0 text-color">Total de Grupos: {{ totalCount }}</h1>
         </div>
-        <div class="my-3">
-            <p-button icon="pi pi-plus" label="Nuevo Grupo" (onClick)="openNew()"
-                styleClass="p-button-success px-4 py-2 text-lg font-medium"></p-button>
+        <div class="my-4 md:mt-0 md:ml-auto">
+            <p-button *appHasPermission="['groups_add']" icon="pi pi-plus" label="Nuevo Grupo" (onClick)="openNew()"
+                styleClass="p-button-success px-4 py-2 text-lg font-medium shadow-3"></p-button>
         </div>
     </div>
 
-    <!-- Group Table -->
-    <p-card styleClass="shadow-2 border-round-xl">
-        <p-table [value]="groups" [rows]="10" [paginator]="true" responsiveLayout="scroll" [rowHover]="true"
-            styleClass="p-datatable-sm">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th class="text-center font-bold">Nivel</th>
-                    <th class="font-bold">Nombre</th>
-                    <th class="font-bold">Autor</th>
-                    <th class="text-center font-bold">Integrantes</th>
-                    <th class="text-center font-bold">Tickets</th>
-                    <th class="text-center font-bold">Acciones</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-g>
-                <tr>
-                    <td class="text-center"><span
-                            class="font-medium px-3 py-1 bg-primary-100 text-primary-900 border-round">{{ g.nivel
-                            }}</span></td>
-                    <td class="font-semibold">{{ g.nombre }}</td>
-                    <td>{{ g.autor }}</td>
-                    <td class="text-center">{{ g.integrantes }}</td>
-                    <td class="text-center">{{ g.tickets }}</td>
-                    <td class="text-center">
-                        <div class="flex justify-content-center gap-2">
-                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
-                                (onClick)="editGroup(g)"></p-button>
-                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
-                                (onClick)="deleteGroup(g)"></p-button>
+    <br>
+
+    <!-- Group Grid -->
+    <div class="grid formgrid">
+        <ng-container *ngFor="let g of groups">
+            <div class="col-12 md:col-6 lg:col-4 mb-4">
+                <!-- Added border-1 border-300 for contrast -->
+                <p-card [header]="g.nombre"
+                    styleClass="h-full shadow-2 hover:shadow-4 border-1 border-300 transition-all transition-duration-200">
+                    <!-- Nivel Tag as Subtitle -->
+                    <ng-template pTemplate="subtitle">
+                        <div class="flex align-items-center mb-2">
+                            <span class="font-medium mr-2 text-600">Nivel:</span>
+                            <p-tag [severity]="g.nivel === 1 ? 'info' : 'warn'"
+                                [value]="g.nivel?.toString() || ''"></p-tag>
                         </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </p-card>
+                    </ng-template>
+
+                    <!-- Content Details -->
+                    <p class="m-0 text-secondary mb-4" style="min-height: 3rem;">
+                        {{ g.descripcion || 'Sin descripción' }}
+                    </p>
+
+                    <div class="flex flex-column gap-3 mb-3 mt-4">
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-600 font-medium flex align-items-center gap-2">
+                                <i class="pi pi-user"></i> Líder:
+                            </span>
+                            <span class="font-bold text-right text-color">{{ g.autor }}</span>
+                        </div>
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-600 font-medium flex align-items-center gap-2">
+                                <i class="pi pi-users"></i> Integrantes:
+                            </span>
+                            <span class="text-right text-color">{{ g.integrantes }}</span>
+                        </div>
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-600 font-medium flex align-items-center gap-2">
+                                <i class="pi pi-ticket"></i> Tickets:
+                            </span>
+                            <span class="text-right text-color">{{ g.tickets }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <ng-template pTemplate="footer">
+                        <div class="flex justify-content-end gap-2 mt-3 pt-3 border-top-1 border-300">
+                            <!-- Add Member Button -->
+                            <p-button *appHasPermission="['groups_edit']" icon="pi pi-user-plus" [text]="true"
+                                severity="success" (onClick)="openAddMemberDialog(g)" pTooltip="Añadir Miembro" tooltipPosition="top"></p-button>
+                            <!-- Only visible if has groups_edit -->
+                            <p-button *appHasPermission="['groups_edit']" icon="pi pi-pencil" [text]="true"
+                                severity="info" (onClick)="editGroup(g)"></p-button>
+                            <!-- Only visible if has groups_delete -->
+                            <p-button *appHasPermission="['groups_delete']" icon="pi pi-trash" [text]="true"
+                                severity="danger" (onClick)="deleteGroup(g)"></p-button>
+                        </div>
+                    </ng-template>
+                </p-card>
+            </div>
+        </ng-container>
+    </div>
 
     <!-- CRUD Dialog (Modal) Form -->
     <p-dialog [(visible)]="groupDialog" [style]="{width: '550px'}" header="Detalles del Grupo" [modal]="true"
@@ -96,6 +122,36 @@
                     styleClass="p-button-secondary px-5 py-2"></p-button>
                 <p-button label="Guardar" icon="pi pi-check" (onClick)="saveGroup()"
                     styleClass="p-button-primary px-5 py-2"></p-button>
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Dialog for Adding a New Member -->
+    <p-dialog [(visible)]="addMemberDialog" [style]="{width: '450px'}" header="Añadir Nuevo Integrante" [modal]="true"
+        styleClass="p-fluid shadow-6" [dismissableMask]="true">
+        <ng-template pTemplate="content">
+            <div class="p-3">
+                <p class="mb-4 text-color-secondary">
+                    Ingresa el correo electrónico de la persona que deseas agregar al grupo 
+                    <strong *ngIf="selectedGroupForMember">{{ selectedGroupForMember.nombre }}</strong>.
+                </p>
+                <div class="field mb-4">
+                    <label for="email" class="font-bold mb-2 block">Correo Electrónico</label>
+                    <input type="email" pInputText id="email" [(ngModel)]="newMemberEmail" required autofocus
+                        placeholder="ejemplo@correo.com"
+                        [ngClass]="{'ng-invalid ng-dirty': addMemberSubmitted && (!newMemberEmail || !newMemberEmail.includes('@'))}" 
+                        class="w-full p-3" />
+                    <small class="p-error block mt-2" *ngIf="addMemberSubmitted && !newMemberEmail">El correo electrónico es requerido.</small>
+                    <small class="p-error block mt-2" *ngIf="addMemberSubmitted && newMemberEmail && !newMemberEmail.includes('@')">Ingresa un correo válido.</small>
+                </div>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <div class="flex justify-content-center gap-3 pt-3 pb-2 w-full">
+                <p-button label="Cancelar" icon="pi pi-times" [text]="true" (onClick)="closeAddMemberDialog()"
+                    styleClass="p-button-secondary px-5 py-2"></p-button>
+                <p-button label="Enviar Invitación" icon="pi pi-send" (onClick)="saveMember()"
+                    styleClass="p-button-success px-5 py-2"></p-button>
             </div>
         </ng-template>
     </p-dialog>

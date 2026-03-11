@@ -8,6 +8,9 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 
+import { TagModule } from 'primeng/tag';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
+
 export interface AppGroup {
   id?: string;
   nivel?: number;
@@ -25,11 +28,12 @@ export interface AppGroup {
     CommonModule, 
     FormsModule, 
     CardModule, 
-    TableModule, 
+    TagModule,
     DialogModule, 
     ButtonModule, 
     InputTextModule, 
-    InputNumberModule
+    InputNumberModule,
+    HasPermissionDirective
   ],
   templateUrl: './group.html',
   styleUrl: './group.css',
@@ -41,6 +45,12 @@ export class Group implements OnInit {
   groupDialog: boolean = false;
   submitted: boolean = false;
   totalCount = 0;
+
+  // Add Member Dialog states
+  addMemberDialog: boolean = false;
+  newMemberEmail: string = '';
+  addMemberSubmitted: boolean = false;
+  selectedGroupForMember: AppGroup | null = null;
 
   ngOnInit() {
     this.groups = [
@@ -92,6 +102,40 @@ export class Group implements OnInit {
       this.groupDialog = false;
       this.group = {};
       this.updateTotalCount();
+    }
+  }
+
+  // --- Add Member Functionality ---
+  openAddMemberDialog(g: AppGroup) {
+    this.selectedGroupForMember = g;
+    this.newMemberEmail = '';
+    this.addMemberSubmitted = false;
+    this.addMemberDialog = true;
+  }
+
+  closeAddMemberDialog() {
+    this.addMemberDialog = false;
+    this.newMemberEmail = '';
+    this.addMemberSubmitted = false;
+    this.selectedGroupForMember = null;
+  }
+
+  saveMember() {
+    this.addMemberSubmitted = true;
+
+    // Simulate sending invitation and adding member if email is valid-ish
+    if (this.newMemberEmail?.trim().includes('@')) {
+      if (this.selectedGroupForMember) {
+        // Find group and increment integrantes
+        const index = this.findIndexById(this.selectedGroupForMember.id!);
+        if (index !== -1) {
+           const currentIntegrantes = this.groups[index].integrantes || 0;
+           this.groups[index].integrantes = currentIntegrantes + 1;
+           // Trigger change detection for pure pipes/components by re-assigning
+           this.groups = [...this.groups];
+        }
+      }
+      this.closeAddMemberDialog();
     }
   }
 
