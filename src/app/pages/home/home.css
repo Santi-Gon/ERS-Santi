@@ -1,0 +1,136 @@
+.dashboard-container {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-header h2 {
+  color: #f1f5f9; /* Off-white suave para no lastimar los ojos */
+  font-weight: 600;
+}
+
+.text-secondary {
+  color: #6c757d;
+}
+
+/* Grilla de Tarjetas Estadísticas */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.stat-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.stat-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* Colores Semánticos para Iconos */
+.blue-bg {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+.red-bg {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.yellow-bg {
+  background-color: rgba(234, 179, 8, 0.1);
+  color: #eab308;
+}
+.green-bg {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.text-blue-500 {
+  color: #3b82f6 !important;
+  font-weight: bold;
+}
+.text-red-500 {
+  color: #ef4444 !important;
+  font-weight: bold;
+}
+.text-yellow-500 {
+  color: #eab308 !important;
+  font-weight: bold;
+}
+.text-green-500 {
+  color: #22c55e !important;
+  font-weight: bold;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-color, #333);
+}
+
+/* Grilla de Grupos */
+.groups-section {
+  margin-top: 2rem;
+}
+
+.groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.group-card {
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.group-desc {
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.no-groups-msg {
+  grid-column: 1 / -1;
+  padding: 3rem;
+  background-color: var(--surface-field, #f8f9fa);
+  border-radius: 12px;
+  border: 1px dashed #dee2e6;
+}

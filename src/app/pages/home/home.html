@@ -1,5 +1,101 @@
-<p-card header="Bienvenido a ERS System" subheader="Panel Principal" [style]="{ width: '100%' }">
-    <p class="text-gray-700 line-height-3">
-        Has iniciado sesión correctamente. Desde el menú lateral podrás acceder a todas las funcionalidades del sistema.
-    </p>
-</p-card>
+<div class="dashboard-container">
+
+    <!-- Encabezado y Estadísticas -->
+    <div class="dashboard-header mb-4">
+        <h2 class="m-0 mb-2">Panel de Control {{ isMaster ? '(Vista Global)' : '(Tus Asignaciones)' }}</h2>
+        <p class="text-secondary m-0 mb-4">Resumen general de tickets y grupos de trabajo.</p>
+
+        <!-- Grid de Tarjetas de Estadísticas -->
+        <div class="stats-grid">
+
+            <!-- Asignados a mí -->
+            <p-card styleClass="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon-wrapper blue-bg">
+                        <i class="pi pi-user stat-icon"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Tickets Asignados Míos</span>
+                        <span class="stat-value text-blue-500">{{ assignedTicketsCount }}</span>
+                    </div>
+                </div>
+            </p-card>
+
+            <!-- Prioridad Alta -->
+            <p-card styleClass="stat-card high-priority-card">
+                <div class="stat-content">
+                    <div class="stat-icon-wrapper red-bg">
+                        <i class="pi pi-exclamation-triangle stat-icon"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Prioridad Alta {{ isMaster ? '(Global)' : '' }}</span>
+                        <span class="stat-value text-red-500">{{ highPriorityCount }}</span>
+                    </div>
+                </div>
+            </p-card>
+
+            <!-- Prioridad Media -->
+            <p-card styleClass="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon-wrapper yellow-bg">
+                        <i class="pi pi-info-circle stat-icon"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Prioridad Media {{ isMaster ? '(Global)' : '' }}</span>
+                        <span class="stat-value text-yellow-500">{{ mediumPriorityCount }}</span>
+                    </div>
+                </div>
+            </p-card>
+
+            <!-- Prioridad Baja -->
+            <p-card styleClass="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon-wrapper green-bg">
+                        <i class="pi pi-check-circle stat-icon"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Prioridad Baja {{ isMaster ? '(Global)' : '' }}</span>
+                        <span class="stat-value text-green-500">{{ lowPriorityCount }}</span>
+                    </div>
+                </div>
+            </p-card>
+
+        </div>
+    </div>
+
+    <p-divider styleClass="mb-4"></p-divider>
+
+    <!-- Sección de Mis Grupos -->
+    <div class="groups-section">
+        <h3 class="mt-0 mb-4">
+            <i class="pi pi-users mr-2"></i> Mis Grupos de Trabajo
+        </h3>
+
+        <div class="groups-grid">
+            <ng-container *ngFor="let group of myGroups">
+                <p-card [header]="group.name" styleClass="group-card h-full">
+                    <ng-template pTemplate="subtitle">
+                        <div class="flex align-items-center gap-2 mb-2">
+                            <p-tag severity="info" [value]="group.membersCount + ' Miembros'"></p-tag>
+                        </div>
+                    </ng-template>
+
+                    <p class="m-0 text-secondary mb-4 group-desc">
+                        {{ group.description }}
+                    </p>
+
+                    <ng-template pTemplate="footer">
+                        <p-button label="Ver Detalles y Tickets" icon="pi pi-arrow-right" iconPos="right"
+                            styleClass="w-full" [outlined]="true" (onClick)="goToGroupDetails(group.id)">
+                        </p-button>
+                    </ng-template>
+                </p-card>
+            </ng-container>
+
+            <div *ngIf="myGroups.length === 0" class="no-groups-msg">
+                <p class="text-secondary text-center w-full">No perteneces a ningún grupo actualmente.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
