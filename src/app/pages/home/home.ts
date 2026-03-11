@@ -70,8 +70,6 @@ export class Home implements OnInit {
   }
 
   goToGroupDetails(groupId: number) {
-    // Redirección simulada a una futura ruta de grupo
-    console.log('Navegando a los detalles del grupo:', groupId);
-    // this.router.navigate(['/group', groupId]);
+    this.router.navigate(['/group', groupId, 'tickets']);
   }
 }
