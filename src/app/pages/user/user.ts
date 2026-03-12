@@ -8,6 +8,9 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
+import { TagModule } from 'primeng/tag';
+import { TableModule } from 'primeng/table';
+import { DividerModule } from 'primeng/divider';
 
 @Component({
   selector: 'app-user',
@@ -21,7 +24,10 @@ import { PasswordModule } from 'primeng/password';
     DialogModule,
     ButtonModule,
     InputTextModule,
-    PasswordModule
+    PasswordModule,
+    TagModule,
+    TableModule,
+    DividerModule
   ],
   templateUrl: './user.html',
   styleUrl: './user.css',
@@ -29,13 +35,41 @@ import { PasswordModule } from 'primeng/password';
 export class User implements OnInit {
   userInfo = {
     username: 'admin2026',
-    fullName: 'Administrador Demo',
-    email: 'admin@erpsanti.com',
+    fullName: 'Juan Pérez',
+    email: 'juan.perez@erpsanti.com',
     address: 'Av. Siempre Viva 123, Ciudad',
     birthDate: '1990-05-15',
     age: 35,
-    phone: '5551234567'
+    phone: '5551234567',
+    initials: 'JP'
   };
+
+  // Mock assigned tickets
+  assignedTickets = [
+    { id: 1, titulo: 'Error en pantalla de login', estado: 'pendiente', prioridad: 'Alta',
+      fechaCreacion: new Date('2026-03-01'), fechaLimite: new Date('2026-03-15'), grupo: 'Desarrollo Frontend' },
+    { id: 5, titulo: 'Corrección de typos en docs', estado: 'finalizada', prioridad: 'Baja',
+      fechaCreacion: new Date('2026-02-28'), fechaLimite: new Date('2026-03-10'), grupo: 'QA & Testing' },
+    { id: 9, titulo: 'Revisión de diseño de login', estado: 'en progreso', prioridad: 'Media',
+      fechaCreacion: new Date('2026-03-08'), fechaLimite: new Date('2026-03-22'), grupo: 'Desarrollo Frontend' },
+  ];
+
+  get ticketsAbiertos()   { return this.assignedTickets.filter(t => t.estado === 'pendiente').length; }
+  get ticketsEnProgreso() { return this.assignedTickets.filter(t => t.estado === 'en progreso').length; }
+  get ticketsFinalizados(){ return this.assignedTickets.filter(t => t.estado === 'finalizada').length; }
+
+  estadoSeverity(e: string): 'secondary' | 'info' | 'warn' | 'success' {
+    switch (e) {
+      case 'pendiente':   return 'secondary';
+      case 'en progreso': return 'info';
+      case 'revisión':    return 'warn';
+      case 'finalizada':  return 'success';
+      default:            return 'secondary';
+    }
+  }
+  prioridadSeverity(p: string): 'danger' | 'warn' | 'success' {
+    return p === 'Alta' ? 'danger' : p === 'Media' ? 'warn' : 'success';
+  }
 
   editDialogVisible: boolean = false;
   editForm!: FormGroup;

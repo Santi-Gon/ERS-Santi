@@ -58,6 +58,80 @@
         </div>
     </p-card>
 
+    <!-- ── Ticket Summary Stats ────────────────────────────────────────── -->
+    <p-divider styleClass="my-5"></p-divider>
+    <h2 class="text-2xl font-bold mb-4">Mis Tickets</h2>
+
+    <div class="grid mb-5">
+        <div class="col-12 md:col-4">
+            <p-card styleClass="shadow-2 text-center">
+                <div class="flex flex-column align-items-center gap-2 py-2">
+                    <div style="width:48px;height:48px;border-radius:12px;background:rgba(156,163,175,.15);display:flex;align-items:center;justify-content:center;">
+                        <i class="pi pi-hourglass text-2xl" style="color:#9ca3af"></i>
+                    </div>
+                    <span class="text-color-secondary text-sm">Abiertos</span>
+                    <span class="text-3xl font-bold" style="color:#9ca3af">{{ ticketsAbiertos }}</span>
+                </div>
+            </p-card>
+        </div>
+        <div class="col-12 md:col-4">
+            <p-card styleClass="shadow-2 text-center">
+                <div class="flex flex-column align-items-center gap-2 py-2">
+                    <div style="width:48px;height:48px;border-radius:12px;background:rgba(59,130,246,.15);display:flex;align-items:center;justify-content:center;">
+                        <i class="pi pi-sync text-2xl" style="color:#3b82f6"></i>
+                    </div>
+                    <span class="text-color-secondary text-sm">En Progreso</span>
+                    <span class="text-3xl font-bold" style="color:#3b82f6">{{ ticketsEnProgreso }}</span>
+                </div>
+            </p-card>
+        </div>
+        <div class="col-12 md:col-4">
+            <p-card styleClass="shadow-2 text-center">
+                <div class="flex flex-column align-items-center gap-2 py-2">
+                    <div style="width:48px;height:48px;border-radius:12px;background:rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center;">
+                        <i class="pi pi-check-circle text-2xl" style="color:#16a34a"></i>
+                    </div>
+                    <span class="text-color-secondary text-sm">Finalizados</span>
+                    <span class="text-3xl font-bold" style="color:#16a34a">{{ ticketsFinalizados }}</span>
+                </div>
+            </p-card>
+        </div>
+    </div>
+
+    <!-- ── Assigned Tickets Table ─────────────────────────────────────── -->
+    <p-card styleClass="shadow-2">
+        <p-table [value]="assignedTickets" [paginator]="true" [rows]="6"
+                 [rowHover]="true" styleClass="p-datatable-sm" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="font-bold">Título</th>
+                    <th class="font-bold">Estado</th>
+                    <th class="font-bold">Prioridad</th>
+                    <th class="font-bold">Grupo</th>
+                    <th class="font-bold">Creación</th>
+                    <th class="font-bold">Límite</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-t>
+                <tr>
+                    <td class="font-semibold">{{ t.titulo }}</td>
+                    <td><p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado"></p-tag></td>
+                    <td><p-tag [severity]="prioridadSeverity(t.prioridad)" [value]="t.prioridad"></p-tag></td>
+                    <td class="text-color-secondary">{{ t.grupo }}</td>
+                    <td>{{ t.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ t.fechaLimite | date:'dd/MM/yyyy' }}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-color-secondary">
+                        <i class="pi pi-inbox text-4xl mb-3 block"></i>No tienes tickets asignados.
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-card>
+
     <!-- Edit Profile Dialog Form -->
     <p-dialog [(visible)]="editDialogVisible" [style]="{width: '600px'}" header="Actualizar Datos del Perfil"
         [modal]="true" styleClass="p-fluid shadow-6" [dismissableMask]="true">

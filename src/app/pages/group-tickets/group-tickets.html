@@ -10,25 +10,45 @@
         </div>
     </div>
 
-    <!-- ══ Stats Row ════════════════════════════════════════════════════════ -->
+    <!-- ══ Stats Row — by Status ════════════════════════════════════════════ -->
     <div class="stats-row mb-5">
 
         <p-card styleClass="shadow-2">
             <div class="stat-card-content">
-                <div class="stat-icon-box red"><i class="pi pi-exclamation-circle"></i></div>
+                <div class="stat-icon-box blue"><i class="pi pi-ticket"></i></div>
                 <div class="stat-info">
-                    <span class="stat-label">Prioridad Alta</span>
-                    <span class="stat-value red">{{ alta }}</span>
+                    <span class="stat-label">Total Tickets</span>
+                    <span class="stat-value blue">{{ totalTickets }}</span>
                 </div>
             </div>
         </p-card>
 
         <p-card styleClass="shadow-2">
             <div class="stat-card-content">
-                <div class="stat-icon-box yellow"><i class="pi pi-info-circle"></i></div>
+                <div class="stat-icon-box grey"><i class="pi pi-hourglass"></i></div>
                 <div class="stat-info">
-                    <span class="stat-label">Prioridad Media</span>
-                    <span class="stat-value yellow">{{ media }}</span>
+                    <span class="stat-label">Pendiente</span>
+                    <span class="stat-value grey">{{ countPendiente }}</span>
+                </div>
+            </div>
+        </p-card>
+
+        <p-card styleClass="shadow-2">
+            <div class="stat-card-content">
+                <div class="stat-icon-box cyan"><i class="pi pi-sync"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">En Progreso</span>
+                    <span class="stat-value cyan">{{ countEnProgreso }}</span>
+                </div>
+            </div>
+        </p-card>
+
+        <p-card styleClass="shadow-2">
+            <div class="stat-card-content">
+                <div class="stat-icon-box yellow"><i class="pi pi-eye"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Revisión</span>
+                    <span class="stat-value yellow">{{ countRevision }}</span>
                 </div>
             </div>
         </p-card>
@@ -37,35 +57,59 @@
             <div class="stat-card-content">
                 <div class="stat-icon-box green"><i class="pi pi-check-circle"></i></div>
                 <div class="stat-info">
-                    <span class="stat-label">Prioridad Baja</span>
-                    <span class="stat-value green">{{ baja }}</span>
+                    <span class="stat-label">Finalizada</span>
+                    <span class="stat-value green">{{ countFinalizada }}</span>
                 </div>
             </div>
         </p-card>
 
     </div>
 
-    <!-- ══ Toolbar ══════════════════════════════════════════════════════════ -->
+    <!-- ══ Toolbar: New + Filters + View Toggle ══════════════════════════════ -->
     <div class="view-toolbar mb-4">
 
+        <!-- Left: New Ticket -->
         <p-button *appHasPermission="['ticket_add']" icon="pi pi-plus" label="Nuevo Ticket"
-            (onClick)="openNew()" styleClass="p-button-primary shadow-2"></p-button>
+            (onClick)="openNew()" styleClass="shadow-2"></p-button>
 
-        <div *ngIf="!canAdd" class="flex-1"></div>
-
-        <div class="flex border-1 border-300 border-round overflow-hidden">
+        <!-- Center: Filter buttons -->
+        <div class="flex gap-2 flex-wrap">
             <p-button
-                icon="pi pi-list" label="Lista"
-                [severity]="!isKanbanView ? 'primary' : 'secondary'"
-                [text]="isKanbanView"
-                styleClass="border-none border-round-none"
-                (onClick)="isKanbanView = false">
+                [label]="'Mis Tickets'"
+                icon="pi pi-user"
+                [outlined]="!filterMine"
+                [severity]="filterMine ? 'info' : 'secondary'"
+                (onClick)="toggleFilter('mine')"
+                [styleClass]="filterMine ? 'filter-active' : ''">
             </p-button>
             <p-button
-                icon="pi pi-th-large" label="Kanban"
+                [label]="'Sin Asignar'"
+                icon="pi pi-user-minus"
+                [outlined]="!filterUnassigned"
+                [severity]="filterUnassigned ? 'warn' : 'secondary'"
+                (onClick)="toggleFilter('unassigned')"
+                [styleClass]="filterUnassigned ? 'filter-active' : ''">
+            </p-button>
+            <p-button
+                [label]="'Prioridad Alta'"
+                icon="pi pi-exclamation-circle"
+                [outlined]="!filterHighPriority"
+                [severity]="filterHighPriority ? 'danger' : 'secondary'"
+                (onClick)="toggleFilter('high')"
+                [styleClass]="filterHighPriority ? 'filter-active' : ''">
+            </p-button>
+        </div>
+
+        <!-- Right: View Toggle -->
+        <div class="flex border-1 border-300 border-round overflow-hidden ml-auto">
+            <p-button icon="pi pi-list" label="Lista"
+                [severity]="!isKanbanView ? 'primary' : 'secondary'"
+                [text]="isKanbanView" styleClass="border-none border-round-none"
+                (onClick)="isKanbanView = false">
+            </p-button>
+            <p-button icon="pi pi-th-large" label="Kanban"
                 [severity]="isKanbanView ? 'primary' : 'secondary'"
-                [text]="!isKanbanView"
-                styleClass="border-none border-round-none"
+                [text]="!isKanbanView" styleClass="border-none border-round-none"
                 (onClick)="isKanbanView = true">
             </p-button>
         </div>
@@ -75,21 +119,19 @@
     <!-- ══ LIST VIEW ════════════════════════════════════════════════════════ -->
     <div *ngIf="!isKanbanView">
         <p-card styleClass="shadow-2">
-            <p-table [value]="tickets" [paginator]="true" [rows]="8"
-                     [rowsPerPageOptions]="[8,16,32]"
-                     [sortMode]="'multiple'"
-                     [rowHover]="true"
-                     styleClass="p-datatable-sm tickets-table"
+            <p-table [value]="filteredTickets" [paginator]="true" [rows]="8"
+                     [rowsPerPageOptions]="[8,16,32]" [sortMode]="'multiple'"
+                     [rowHover]="true" styleClass="p-datatable-sm tickets-table"
                      responsiveLayout="scroll">
 
                 <ng-template pTemplate="header">
                     <tr>
-                        <th pSortableColumn="titulo"    class="font-bold">Título      <p-sortIcon field="titulo"></p-sortIcon></th>
-                        <th pSortableColumn="estado"    class="font-bold">Estado      <p-sortIcon field="estado"></p-sortIcon></th>
-                        <th pSortableColumn="asignadoA" class="font-bold">Asignado a  <p-sortIcon field="asignadoA"></p-sortIcon></th>
-                        <th pSortableColumn="prioridad" class="font-bold">Prioridad   <p-sortIcon field="prioridad"></p-sortIcon></th>
-                        <th pSortableColumn="fechaCreacion" class="font-bold">Creación<p-sortIcon field="fechaCreacion"></p-sortIcon></th>
-                        <th pSortableColumn="fechaLimite"   class="font-bold">Límite  <p-sortIcon field="fechaLimite"></p-sortIcon></th>
+                        <th pSortableColumn="titulo"       class="font-bold">Título        <p-sortIcon field="titulo"></p-sortIcon></th>
+                        <th pSortableColumn="estado"       class="font-bold">Estado        <p-sortIcon field="estado"></p-sortIcon></th>
+                        <th pSortableColumn="asignadoA"    class="font-bold">Asignado a    <p-sortIcon field="asignadoA"></p-sortIcon></th>
+                        <th pSortableColumn="prioridad"    class="font-bold">Prioridad     <p-sortIcon field="prioridad"></p-sortIcon></th>
+                        <th pSortableColumn="fechaCreacion" class="font-bold">Creación     <p-sortIcon field="fechaCreacion"></p-sortIcon></th>
+                        <th pSortableColumn="fechaLimite"   class="font-bold">Límite       <p-sortIcon field="fechaLimite"></p-sortIcon></th>
                         <th class="font-bold text-center">Acciones</th>
                     </tr>
                 </ng-template>
@@ -98,7 +140,10 @@
                     <tr class="cursor-pointer" (click)="openTicket(t, false)">
                         <td class="font-semibold">{{ t.titulo }}</td>
                         <td><p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado"></p-tag></td>
-                        <td>{{ t.asignadoA }}</td>
+                        <td>
+                            <span *ngIf="t.asignadoA; else noAsignado">{{ t.asignadoA }}</span>
+                            <ng-template #noAsignado><span class="text-color-secondary text-xs italic">Sin asignar</span></ng-template>
+                        </td>
                         <td><p-tag [severity]="prioridadSeverity(t.prioridad)" [value]="t.prioridad"></p-tag></td>
                         <td>{{ t.fechaCreacion | date:'dd/MM/yyyy' }}</td>
                         <td>{{ t.fechaLimite   | date:'dd/MM/yyyy' }}</td>
@@ -117,9 +162,9 @@
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td colspan="7" class="text-center py-5 text-color-secondary">
-                            <i class="pi pi-inbox text-4xl mb-3 block"></i>
-                            No hay tickets en este grupo aún.
+                        <td colspan="7" class="text-center py-6 text-color-secondary">
+                            <i class="pi pi-inbox text-5xl mb-3 block"></i>
+                            No hay tickets que coincidan con los filtros activos.
                         </td>
                     </tr>
                 </ng-template>
@@ -127,108 +172,179 @@
         </p-card>
     </div>
 
-    <!-- ══ KANBAN VIEW ══════════════════════════════════════════════════════ -->
+    <!-- ══ KANBAN VIEW — by Status ══════════════════════════════════════════ -->
     <div *ngIf="isKanbanView" class="kanban-board">
 
-        <!-- ── Columna Alta ── -->
+        <!-- ── Pendiente ── -->
         <div class="kanban-col-wrapper">
-            <!-- Header card centered above column -->
-            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-left-4 border-red-400">
+            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-top-3 border-400">
                 <div class="flex flex-column align-items-center gap-2 py-1">
-                    <i class="pi pi-exclamation-circle text-2xl" style="color:#ef4444"></i>
-                    <span class="font-bold text-base" style="color:#ef4444">Prioridad Alta</span>
-                    <p-tag severity="danger" [value]="ticketsAlta.length.toString()"></p-tag>
+                    <i class="pi pi-hourglass text-xl text-400"></i>
+                    <span class="font-bold text-base text-400">Pendiente</span>
+                    <p-tag severity="secondary" [value]="kanbanPendiente.length.toString()"></p-tag>
                 </div>
             </p-card>
-
-            <!-- Ticket list -->
-            <p-card styleClass="shadow-2 kanban-col-body">
-                <div *ngIf="ticketsAlta.length === 0" class="empty-col">Sin tickets</div>
-                <ng-container *ngFor="let t of ticketsAlta; let last = last">
-                    <div class="kanban-ticket-row" (click)="openTicket(t, false)">
+            <div class="kanban-drop-zone"
+                [class.drop-active]="dropTargetColumn === 'pendiente'"
+                (dragover)="onDragOver($event, 'pendiente')"
+                (dragleave)="onDragLeave()"
+                (drop)="onDrop($event, 'pendiente')">
+                <div *ngIf="kanbanPendiente.length === 0" class="empty-col">Sin tickets</div>
+                <ng-container *ngFor="let t of kanbanPendiente; let last = last">
+                    <div class="kanban-ticket-card border-left-3 border-400 cursor-grab"
+                        draggable="true"
+                        (dragstart)="onDragStart(t)"
+                        (click)="openTicket(t, false)">
                         <div class="kanban-ticket-title">{{ t.titulo }}</div>
-                        <div class="flex align-items-center justify-content-between mt-2">
-                            <span class="text-color-secondary text-xs">{{ t.asignadoA }}</span>
-                            <p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado" styleClass="text-xs"></p-tag>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <p-tag [severity]="prioridadSeverity(t.prioridad)" [value]="t.prioridad" styleClass="text-xs"></p-tag>
+                        </div>
+                        <div class="ticket-meta">
+                            <i class="pi pi-user text-xs"></i>
+                            <span>{{ t.asignadoA || 'Sin asignar' }}</span>
+                        </div>
+                        <div class="ticket-meta">
+                            <i class="pi pi-calendar text-xs"></i>
+                            <span>Creación: {{ t.fechaCreacion | date:'dd/MM' }}</span>
+                            <span class="ml-auto">Límite: {{ t.fechaLimite | date:'dd/MM' }}</span>
                         </div>
                         <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
-                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil"
-                                [text]="true" severity="info" [rounded]="true" pTooltip="Editar"
-                                (onClick)="openTicket(t, true)"></p-button>
-                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash"
-                                [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar"
-                                (onClick)="deleteTicket(t)"></p-button>
+                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
+                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
                         </div>
                     </div>
-                    <p-divider *ngIf="!last" styleClass="my-0"></p-divider>
+                    <p-divider *ngIf="!last" styleClass="my-1"></p-divider>
                 </ng-container>
-            </p-card>
+            </div>
         </div>
 
-        <!-- ── Columna Media ── -->
+        <!-- ── En Progreso ── -->
         <div class="kanban-col-wrapper">
-            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-left-4 border-yellow-400">
+            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-top-3 border-blue-400">
                 <div class="flex flex-column align-items-center gap-2 py-1">
-                    <i class="pi pi-info-circle text-2xl" style="color:#ca8a04"></i>
-                    <span class="font-bold text-base" style="color:#ca8a04">Prioridad Media</span>
-                    <p-tag severity="warn" [value]="ticketsMedia.length.toString()"></p-tag>
+                    <i class="pi pi-sync text-xl text-blue-400"></i>
+                    <span class="font-bold text-base text-blue-400">En Progreso</span>
+                    <p-tag severity="info" [value]="kanbanEnProgreso.length.toString()"></p-tag>
                 </div>
             </p-card>
-
-            <p-card styleClass="shadow-2 kanban-col-body">
-                <div *ngIf="ticketsMedia.length === 0" class="empty-col">Sin tickets</div>
-                <ng-container *ngFor="let t of ticketsMedia; let last = last">
-                    <div class="kanban-ticket-row" (click)="openTicket(t, false)">
+            <div class="kanban-drop-zone"
+                [class.drop-active]="dropTargetColumn === 'en progreso'"
+                (dragover)="onDragOver($event, 'en progreso')"
+                (dragleave)="onDragLeave()"
+                (drop)="onDrop($event, 'en progreso')">
+                <div *ngIf="kanbanEnProgreso.length === 0" class="empty-col">Sin tickets</div>
+                <ng-container *ngFor="let t of kanbanEnProgreso; let last = last">
+                    <div class="kanban-ticket-card border-left-3 border-blue-400 cursor-grab"
+                        draggable="true"
+                        (dragstart)="onDragStart(t)"
+                        (click)="openTicket(t, false)">
                         <div class="kanban-ticket-title">{{ t.titulo }}</div>
-                        <div class="flex align-items-center justify-content-between mt-2">
-                            <span class="text-color-secondary text-xs">{{ t.asignadoA }}</span>
-                            <p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado" styleClass="text-xs"></p-tag>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <p-tag [severity]="prioridadSeverity(t.prioridad)" [value]="t.prioridad" styleClass="text-xs"></p-tag>
+                        </div>
+                        <div class="ticket-meta">
+                            <i class="pi pi-user text-xs"></i>
+                            <span>{{ t.asignadoA || 'Sin asignar' }}</span>
+                        </div>
+                        <div class="ticket-meta">
+                            <i class="pi pi-calendar text-xs"></i>
+                            <span>Creación: {{ t.fechaCreacion | date:'dd/MM' }}</span>
+                            <span class="ml-auto">Límite: {{ t.fechaLimite | date:'dd/MM' }}</span>
                         </div>
                         <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
-                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil"
-                                [text]="true" severity="info" [rounded]="true" pTooltip="Editar"
-                                (onClick)="openTicket(t, true)"></p-button>
-                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash"
-                                [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar"
-                                (onClick)="deleteTicket(t)"></p-button>
+                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
+                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
                         </div>
                     </div>
-                    <p-divider *ngIf="!last" styleClass="my-0"></p-divider>
+                    <p-divider *ngIf="!last" styleClass="my-1"></p-divider>
                 </ng-container>
-            </p-card>
+            </div>
         </div>
 
-        <!-- ── Columna Baja ── -->
+        <!-- ── Revisión ── -->
         <div class="kanban-col-wrapper">
-            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-left-4 border-green-400">
+            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-top-3 border-yellow-400">
                 <div class="flex flex-column align-items-center gap-2 py-1">
-                    <i class="pi pi-check-circle text-2xl" style="color:#16a34a"></i>
-                    <span class="font-bold text-base" style="color:#16a34a">Prioridad Baja</span>
-                    <p-tag severity="success" [value]="ticketsBaja.length.toString()"></p-tag>
+                    <i class="pi pi-eye text-xl text-yellow-500"></i>
+                    <span class="font-bold text-base text-yellow-500">Revisión</span>
+                    <p-tag severity="warn" [value]="kanbanRevision.length.toString()"></p-tag>
                 </div>
             </p-card>
-
-            <p-card styleClass="shadow-2 kanban-col-body">
-                <div *ngIf="ticketsBaja.length === 0" class="empty-col">Sin tickets</div>
-                <ng-container *ngFor="let t of ticketsBaja; let last = last">
-                    <div class="kanban-ticket-row" (click)="openTicket(t, false)">
+            <div class="kanban-drop-zone"
+                [class.drop-active]="dropTargetColumn === 'revisión'"
+                (dragover)="onDragOver($event, 'revisión')"
+                (dragleave)="onDragLeave()"
+                (drop)="onDrop($event, 'revisión')">
+                <div *ngIf="kanbanRevision.length === 0" class="empty-col">Sin tickets</div>
+                <ng-container *ngFor="let t of kanbanRevision; let last = last">
+                    <div class="kanban-ticket-card border-left-3 border-yellow-400 cursor-grab"
+                        draggable="true"
+                        (dragstart)="onDragStart(t)"
+                        (click)="openTicket(t, false)">
                         <div class="kanban-ticket-title">{{ t.titulo }}</div>
-                        <div class="flex align-items-center justify-content-between mt-2">
-                            <span class="text-color-secondary text-xs">{{ t.asignadoA }}</span>
-                            <p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado" styleClass="text-xs"></p-tag>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <p-tag [severity]="prioridadSeverity(t.prioridad)" [value]="t.prioridad" styleClass="text-xs"></p-tag>
+                        </div>
+                        <div class="ticket-meta">
+                            <i class="pi pi-user text-xs"></i>
+                            <span>{{ t.asignadoA || 'Sin asignar' }}</span>
+                        </div>
+                        <div class="ticket-meta">
+                            <i class="pi pi-calendar text-xs"></i>
+                            <span>Creación: {{ t.fechaCreacion | date:'dd/MM' }}</span>
+                            <span class="ml-auto">Límite: {{ t.fechaLimite | date:'dd/MM' }}</span>
                         </div>
                         <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
-                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil"
-                                [text]="true" severity="info" [rounded]="true" pTooltip="Editar"
-                                (onClick)="openTicket(t, true)"></p-button>
-                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash"
-                                [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar"
-                                (onClick)="deleteTicket(t)"></p-button>
+                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
+                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
                         </div>
                     </div>
-                    <p-divider *ngIf="!last" styleClass="my-0"></p-divider>
+                    <p-divider *ngIf="!last" styleClass="my-1"></p-divider>
                 </ng-container>
+            </div>
+        </div>
+
+        <!-- ── Finalizada ── -->
+        <div class="kanban-col-wrapper">
+            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-top-3 border-green-400">
+                <div class="flex flex-column align-items-center gap-2 py-1">
+                    <i class="pi pi-check-circle text-xl text-green-400"></i>
+                    <span class="font-bold text-base text-green-400">Finalizada</span>
+                    <p-tag severity="success" [value]="kanbanFinalizada.length.toString()"></p-tag>
+                </div>
             </p-card>
+            <div class="kanban-drop-zone"
+                [class.drop-active]="dropTargetColumn === 'finalizada'"
+                (dragover)="onDragOver($event, 'finalizada')"
+                (dragleave)="onDragLeave()"
+                (drop)="onDrop($event, 'finalizada')">
+                <div *ngIf="kanbanFinalizada.length === 0" class="empty-col">Sin tickets</div>
+                <ng-container *ngFor="let t of kanbanFinalizada; let last = last">
+                    <div class="kanban-ticket-card border-left-3 border-green-400 cursor-grab"
+                        draggable="true"
+                        (dragstart)="onDragStart(t)"
+                        (click)="openTicket(t, false)">
+                        <div class="kanban-ticket-title">{{ t.titulo }}</div>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <p-tag [severity]="prioridadSeverity(t.prioridad)" [value]="t.prioridad" styleClass="text-xs"></p-tag>
+                        </div>
+                        <div class="ticket-meta">
+                            <i class="pi pi-user text-xs"></i>
+                            <span>{{ t.asignadoA || 'Sin asignar' }}</span>
+                        </div>
+                        <div class="ticket-meta">
+                            <i class="pi pi-calendar text-xs"></i>
+                            <span>Creación: {{ t.fechaCreacion | date:'dd/MM' }}</span>
+                            <span class="ml-auto">Límite: {{ t.fechaLimite | date:'dd/MM' }}</span>
+                        </div>
+                        <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
+                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
+                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
+                        </div>
+                    </div>
+                    <p-divider *ngIf="!last" styleClass="my-1"></p-divider>
+                </ng-container>
+            </div>
         </div>
 
     </div>
@@ -242,7 +358,6 @@
         <ng-template pTemplate="content">
             <div class="p-3" *ngIf="editTicket">
 
-                <!-- Título -->
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Título *</label>
                     <input pInputText [(ngModel)]="editTicket.titulo" [disabled]="!isEditing && editTicket.id !== 0"
@@ -251,7 +366,6 @@
                     <small class="p-error" *ngIf="submitted && !editTicket.titulo">El título es requerido.</small>
                 </div>
 
-                <!-- Descripción -->
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Descripción</label>
                     <textarea pTextarea [(ngModel)]="editTicket.descripcion"
@@ -259,53 +373,47 @@
                         rows="3" class="w-full" placeholder="Describe el ticket..."></textarea>
                 </div>
 
-                <!-- Fila: Estado + Prioridad -->
                 <div class="formgrid grid mb-5">
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Estado</label>
-                        <p-select [(ngModel)]="editTicket.estado"
-                            [options]="estadoOptions" optionLabel="label" optionValue="value"
+                        <p-select [(ngModel)]="editTicket.estado" [options]="estadoOptions"
+                            optionLabel="label" optionValue="value"
                             [disabled]="!isEditing && editTicket.id !== 0"
-                            styleClass="w-full" placeholder="Selecciona estado"></p-select>
+                            styleClass="w-full"></p-select>
                     </div>
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Prioridad</label>
-                        <p-select [(ngModel)]="editTicket.prioridad"
-                            [options]="prioridadOptions" optionLabel="label" optionValue="value"
+                        <p-select [(ngModel)]="editTicket.prioridad" [options]="prioridadOptions"
+                            optionLabel="label" optionValue="value"
                             [disabled]="!isEditing && editTicket.id !== 0"
-                            styleClass="w-full" placeholder="Selecciona prioridad"></p-select>
+                            styleClass="w-full"></p-select>
                     </div>
                 </div>
 
-                <!-- Asignado A -->
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Asignado a *</label>
-                    <p-select [(ngModel)]="editTicket.asignadoA"
-                        [options]="miembroOptions" optionLabel="label" optionValue="value"
+                    <p-select [(ngModel)]="editTicket.asignadoA" [options]="miembroOptions"
+                        optionLabel="label" optionValue="value"
                         [disabled]="!isEditing && editTicket.id !== 0"
                         [ngClass]="{'ng-invalid ng-dirty': submitted && !editTicket.asignadoA}"
                         styleClass="w-full" placeholder="Selecciona un miembro"></p-select>
                     <small class="p-error" *ngIf="submitted && !editTicket.asignadoA">El responsable es requerido.</small>
                 </div>
 
-                <!-- Fila: Fechas -->
                 <div class="formgrid grid mb-5">
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Fecha de Creación</label>
-                        <!-- Always read-only -->
                         <input pInputText [value]="editTicket.fechaCreacion | date:'dd/MM/yyyy HH:mm'"
                             [disabled]="true" class="w-full" />
-                        <small class="text-color-secondary text-xs mt-1 block">Este campo no puede modificarse.</small>
+                        <small class="text-color-secondary text-xs mt-1 block">No modificable.</small>
                     </div>
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Fecha Límite</label>
                         <input pInputText type="date" [(ngModel)]="editTicket.fechaLimite"
-                            [disabled]="!isEditing && editTicket.id !== 0"
-                            class="w-full" />
+                            [disabled]="!isEditing && editTicket.id !== 0" class="w-full" />
                     </div>
                 </div>
 
-                <!-- Comentarios -->
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Comentarios</label>
                     <textarea pTextarea [(ngModel)]="editTicket.comentarios"
@@ -313,10 +421,9 @@
                         rows="2" class="w-full" placeholder="Comentarios adicionales..."></textarea>
                 </div>
 
-                <!-- Historial (read-only always) -->
                 <div class="field" *ngIf="editTicket.historialCambios && editTicket.historialCambios.length">
                     <p-divider></p-divider>
-                    <label class="font-bold mb-2 block">Historial de Cambios</label>
+                    <label class="font-bold mb-3 block">Historial de Cambios</label>
                     <ul class="list-none p-0 m-0">
                         <li *ngFor="let h of editTicket.historialCambios"
                             class="text-sm text-color-secondary py-2 border-bottom-1 border-200 flex align-items-center gap-2">
@@ -330,25 +437,19 @@
 
         <ng-template pTemplate="footer">
             <div class="flex justify-content-between align-items-center w-full pt-2">
-
-                <!-- Delete (only in view/edit mode, not new) -->
                 <ng-container *appHasPermission="['ticket_delete']">
                     <p-button *ngIf="editTicket && editTicket.id !== 0"
                         icon="pi pi-trash" label="Eliminar" severity="danger" [text]="true"
                         (onClick)="deleteTicket(editTicket)"></p-button>
                 </ng-container>
-
                 <div class="flex gap-2 ml-auto">
-                    <!-- Switch to edit mode -->
                     <ng-container *appHasPermission="['ticket_edit']">
                         <p-button *ngIf="editTicket && editTicket.id !== 0 && !isEditing"
                             icon="pi pi-pencil" label="Editar" severity="info" [outlined]="true"
                             (onClick)="isEditing = true"></p-button>
                     </ng-container>
-
                     <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
                         (onClick)="closeDialog()"></p-button>
-
                     <p-button *ngIf="isEditing || (editTicket && editTicket.id === 0)"
                         label="Guardar" icon="pi pi-check" severity="primary"
                         (onClick)="saveTicket()"></p-button>

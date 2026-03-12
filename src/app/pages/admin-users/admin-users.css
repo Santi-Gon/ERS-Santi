@@ -1,0 +1,14 @@
+.perm-chip :deep(.p-chip) {
+  background: rgba(79,209,197,.12);
+  color: #4fd1c5;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  height: auto;
+}
+.perm-chip-more :deep(.p-chip) {
+  background: rgba(148,163,184,.1);
+  color: #94a3b8;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  height: auto;
+}

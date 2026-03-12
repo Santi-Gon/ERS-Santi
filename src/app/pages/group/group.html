@@ -54,6 +54,20 @@
                         </div>
                     </div>
 
+                    <!-- Member List -->
+                    <div *ngIf="g.members && g.members.length" class="mt-3">
+                        <p-divider styleClass="mb-3"></p-divider>
+                        <span class="text-xs text-color-secondary font-bold block mb-2">
+                            <i class="pi pi-users mr-1"></i>Integrantes
+                        </span>
+                        <div class="flex flex-wrap gap-2">
+                            <p-chip *ngFor="let m of g.members"
+                                [label]="m"
+                                styleClass="text-xs member-chip">
+                            </p-chip>
+                        </div>
+                    </div>
+
                     <!-- Actions -->
                     <ng-template pTemplate="footer">
                         <div class="flex justify-content-end gap-2 mt-3 pt-3 border-top-1 border-300">

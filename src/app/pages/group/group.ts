@@ -10,6 +10,10 @@ import { InputNumberModule } from 'primeng/inputnumber';
 
 import { TagModule } from 'primeng/tag';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
+import { ChipModule } from 'primeng/chip';
+import { AvatarModule } from 'primeng/avatar';
+import { AvatarGroupModule } from 'primeng/avatargroup';
+import { DividerModule } from 'primeng/divider';
 
 export interface AppGroup {
   id?: string;
@@ -19,6 +23,7 @@ export interface AppGroup {
   integrantes?: number;
   tickets?: number;
   descripcion?: string;
+  members?: string[];
 }
 
 @Component({
@@ -33,6 +38,10 @@ export interface AppGroup {
     ButtonModule, 
     InputTextModule, 
     InputNumberModule,
+    ChipModule,
+    AvatarModule,
+    AvatarGroupModule,
+    DividerModule,
     HasPermissionDirective
   ],
   templateUrl: './group.html',
@@ -54,9 +63,15 @@ export class Group implements OnInit {
 
   ngOnInit() {
     this.groups = [
-      { id: '1000', nivel: 1, autor: 'Juan Pérez', nombre: 'Desarrollo Frontend', integrantes: 5, tickets: 12, descripcion: 'Equipo encargado de la interfaz de usuario.' },
-      { id: '1001', nivel: 2, autor: 'María Gómez', nombre: 'Backend Services', integrantes: 8, tickets: 25, descripcion: 'Equipo de APIs y base de datos.' },
-      { id: '1002', nivel: 1, autor: 'Carlos Ruiz', nombre: 'QA Automation', integrantes: 3, tickets: 5, descripcion: 'Automatización de pruebas y calidad.' }
+      { id: '1000', nivel: 1, autor: 'Juan Pérez', nombre: 'Desarrollo Frontend', integrantes: 5, tickets: 12,
+        descripcion: 'Equipo encargado de la interfaz de usuario.',
+        members: ['Juan Pérez', 'María Gómez', 'Carlos Ruiz', 'Ana Flores', 'Luis Torres'] },
+      { id: '1001', nivel: 2, autor: 'María Gómez', nombre: 'Backend Services', integrantes: 4, tickets: 25,
+        descripcion: 'Equipo de APIs y base de datos.',
+        members: ['María Gómez', 'Carlos Ruiz', 'Luis Torres', 'Ana Flores'] },
+      { id: '1002', nivel: 1, autor: 'Carlos Ruiz', nombre: 'QA Automation', integrantes: 3, tickets: 5,
+        descripcion: 'Automatización de pruebas y calidad.',
+        members: ['Carlos Ruiz', 'Ana Flores', 'Juan Pérez'] }
     ];
     this.updateTotalCount();
   }
