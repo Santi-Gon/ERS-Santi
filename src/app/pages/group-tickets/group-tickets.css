@@ -69,44 +69,39 @@
   .kanban-board { grid-template-columns: 1fr; }
 }
 
-.kanban-column-header {
+/* Column wrapper: header card stacked above body card */
+.kanban-col-wrapper {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
+  flex-direction: column;
 }
 
-.kanban-ticket {
+/* Header mini-card: centered content */
+.kanban-col-header-card :deep(.p-card-body) {
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+
+/* Ticket list card — compact body padding */
+.kanban-col-body :deep(.p-card-body) {
+  padding: 0.25rem 0.75rem;
+}
+
+/* Individual ticket row inside a column */
+.kanban-ticket-row {
   cursor: pointer;
-  margin-bottom: 0.75rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  padding: 0.85rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.15s ease;
 }
-.kanban-ticket:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,.15);
-}
-.kanban-ticket :deep(.p-card-body) {
-  padding: 0.85rem 1rem;
+.kanban-ticket-row:hover {
+  background: var(--surface-hover);
 }
 
 .kanban-ticket-title {
   font-weight: 600;
   font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
-
-.kanban-badge {
-  display: inline-block;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-.badge-high   { background: rgba(239,68,68,.15);  color: #dc2626; }
-.badge-medium { background: rgba(234,179,8,.15);   color: #b45309; }
-.badge-low    { background: rgba(34,197,94,.15);   color: #15803d; }
 
 /* ── Empty state ──────────────────────────────────────────────────────── */
 .empty-col {

@@ -130,102 +130,104 @@
     <!-- ══ KANBAN VIEW ══════════════════════════════════════════════════════ -->
     <div *ngIf="isKanbanView" class="kanban-board">
 
-        <!-- Columna Alta -->
-        <div>
-            <p-card styleClass="shadow-2">
-                <ng-template pTemplate="header">
-                    <div class="kanban-column-header px-4 pt-4">
-                        <i class="pi pi-exclamation-circle" style="color:#ef4444"></i>
-                        <span style="color:#ef4444">Prioridad Alta</span>
-                        <p-tag severity="danger" [value]="ticketsAlta.length.toString()" styleClass="ml-auto"></p-tag>
-                    </div>
-                </ng-template>
+        <!-- ── Columna Alta ── -->
+        <div class="kanban-col-wrapper">
+            <!-- Header card centered above column -->
+            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-left-4 border-red-400">
+                <div class="flex flex-column align-items-center gap-2 py-1">
+                    <i class="pi pi-exclamation-circle text-2xl" style="color:#ef4444"></i>
+                    <span class="font-bold text-base" style="color:#ef4444">Prioridad Alta</span>
+                    <p-tag severity="danger" [value]="ticketsAlta.length.toString()"></p-tag>
+                </div>
+            </p-card>
 
+            <!-- Ticket list -->
+            <p-card styleClass="shadow-2 kanban-col-body">
                 <div *ngIf="ticketsAlta.length === 0" class="empty-col">Sin tickets</div>
-
-                <p-card *ngFor="let t of ticketsAlta"
-                    styleClass="kanban-ticket shadow-1 border-left-3 border-red-400"
-                    (click)="openTicket(t, false)">
-                    <div class="kanban-ticket-title">{{ t.titulo }}</div>
-                    <div class="flex align-items-center justify-content-between mt-2">
-                        <span class="text-color-secondary text-xs">{{ t.asignadoA }}</span>
-                        <p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado" styleClass="text-xs"></p-tag>
+                <ng-container *ngFor="let t of ticketsAlta; let last = last">
+                    <div class="kanban-ticket-row" (click)="openTicket(t, false)">
+                        <div class="kanban-ticket-title">{{ t.titulo }}</div>
+                        <div class="flex align-items-center justify-content-between mt-2">
+                            <span class="text-color-secondary text-xs">{{ t.asignadoA }}</span>
+                            <p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado" styleClass="text-xs"></p-tag>
+                        </div>
+                        <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
+                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil"
+                                [text]="true" severity="info" [rounded]="true" pTooltip="Editar"
+                                (onClick)="openTicket(t, true)"></p-button>
+                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash"
+                                [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar"
+                                (onClick)="deleteTicket(t)"></p-button>
+                        </div>
                     </div>
-                    <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
-                        <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil"
-                            [text]="true" severity="info" [rounded]="true" pTooltip="Editar"
-                            (onClick)="openTicket(t, true)"></p-button>
-                        <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash"
-                            [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar"
-                            (onClick)="deleteTicket(t)"></p-button>
-                    </div>
-                </p-card>
+                    <p-divider *ngIf="!last" styleClass="my-0"></p-divider>
+                </ng-container>
             </p-card>
         </div>
 
-        <!-- Columna Media -->
-        <div>
-            <p-card styleClass="shadow-2">
-                <ng-template pTemplate="header">
-                    <div class="kanban-column-header px-4 pt-4">
-                        <i class="pi pi-info-circle" style="color:#ca8a04"></i>
-                        <span style="color:#ca8a04">Prioridad Media</span>
-                        <p-tag severity="warn" [value]="ticketsMedia.length.toString()" styleClass="ml-auto"></p-tag>
-                    </div>
-                </ng-template>
+        <!-- ── Columna Media ── -->
+        <div class="kanban-col-wrapper">
+            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-left-4 border-yellow-400">
+                <div class="flex flex-column align-items-center gap-2 py-1">
+                    <i class="pi pi-info-circle text-2xl" style="color:#ca8a04"></i>
+                    <span class="font-bold text-base" style="color:#ca8a04">Prioridad Media</span>
+                    <p-tag severity="warn" [value]="ticketsMedia.length.toString()"></p-tag>
+                </div>
+            </p-card>
 
+            <p-card styleClass="shadow-2 kanban-col-body">
                 <div *ngIf="ticketsMedia.length === 0" class="empty-col">Sin tickets</div>
-
-                <p-card *ngFor="let t of ticketsMedia"
-                    styleClass="kanban-ticket shadow-1 border-left-3 border-yellow-400"
-                    (click)="openTicket(t, false)">
-                    <div class="kanban-ticket-title">{{ t.titulo }}</div>
-                    <div class="flex align-items-center justify-content-between mt-2">
-                        <span class="text-color-secondary text-xs">{{ t.asignadoA }}</span>
-                        <p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado" styleClass="text-xs"></p-tag>
+                <ng-container *ngFor="let t of ticketsMedia; let last = last">
+                    <div class="kanban-ticket-row" (click)="openTicket(t, false)">
+                        <div class="kanban-ticket-title">{{ t.titulo }}</div>
+                        <div class="flex align-items-center justify-content-between mt-2">
+                            <span class="text-color-secondary text-xs">{{ t.asignadoA }}</span>
+                            <p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado" styleClass="text-xs"></p-tag>
+                        </div>
+                        <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
+                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil"
+                                [text]="true" severity="info" [rounded]="true" pTooltip="Editar"
+                                (onClick)="openTicket(t, true)"></p-button>
+                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash"
+                                [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar"
+                                (onClick)="deleteTicket(t)"></p-button>
+                        </div>
                     </div>
-                    <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
-                        <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil"
-                            [text]="true" severity="info" [rounded]="true" pTooltip="Editar"
-                            (onClick)="openTicket(t, true)"></p-button>
-                        <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash"
-                            [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar"
-                            (onClick)="deleteTicket(t)"></p-button>
-                    </div>
-                </p-card>
+                    <p-divider *ngIf="!last" styleClass="my-0"></p-divider>
+                </ng-container>
             </p-card>
         </div>
 
-        <!-- Columna Baja -->
-        <div>
-            <p-card styleClass="shadow-2">
-                <ng-template pTemplate="header">
-                    <div class="kanban-column-header px-4 pt-4">
-                        <i class="pi pi-check-circle" style="color:#16a34a"></i>
-                        <span style="color:#16a34a">Prioridad Baja</span>
-                        <p-tag severity="success" [value]="ticketsBaja.length.toString()" styleClass="ml-auto"></p-tag>
-                    </div>
-                </ng-template>
+        <!-- ── Columna Baja ── -->
+        <div class="kanban-col-wrapper">
+            <p-card styleClass="shadow-2 mb-3 kanban-col-header-card border-left-4 border-green-400">
+                <div class="flex flex-column align-items-center gap-2 py-1">
+                    <i class="pi pi-check-circle text-2xl" style="color:#16a34a"></i>
+                    <span class="font-bold text-base" style="color:#16a34a">Prioridad Baja</span>
+                    <p-tag severity="success" [value]="ticketsBaja.length.toString()"></p-tag>
+                </div>
+            </p-card>
 
+            <p-card styleClass="shadow-2 kanban-col-body">
                 <div *ngIf="ticketsBaja.length === 0" class="empty-col">Sin tickets</div>
-
-                <p-card *ngFor="let t of ticketsBaja"
-                    styleClass="kanban-ticket shadow-1 border-left-3 border-green-400"
-                    (click)="openTicket(t, false)">
-                    <div class="kanban-ticket-title">{{ t.titulo }}</div>
-                    <div class="flex align-items-center justify-content-between mt-2">
-                        <span class="text-color-secondary text-xs">{{ t.asignadoA }}</span>
-                        <p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado" styleClass="text-xs"></p-tag>
+                <ng-container *ngFor="let t of ticketsBaja; let last = last">
+                    <div class="kanban-ticket-row" (click)="openTicket(t, false)">
+                        <div class="kanban-ticket-title">{{ t.titulo }}</div>
+                        <div class="flex align-items-center justify-content-between mt-2">
+                            <span class="text-color-secondary text-xs">{{ t.asignadoA }}</span>
+                            <p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado" styleClass="text-xs"></p-tag>
+                        </div>
+                        <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
+                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil"
+                                [text]="true" severity="info" [rounded]="true" pTooltip="Editar"
+                                (onClick)="openTicket(t, true)"></p-button>
+                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash"
+                                [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar"
+                                (onClick)="deleteTicket(t)"></p-button>
+                        </div>
                     </div>
-                    <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
-                        <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil"
-                            [text]="true" severity="info" [rounded]="true" pTooltip="Editar"
-                            (onClick)="openTicket(t, true)"></p-button>
-                        <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash"
-                            [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar"
-                            (onClick)="deleteTicket(t)"></p-button>
-                    </div>
-                </p-card>
+                    <p-divider *ngIf="!last" styleClass="my-0"></p-divider>
+                </ng-container>
             </p-card>
         </div>
 
