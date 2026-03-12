@@ -1,7 +1,8 @@
 <div class="gemini-sidebar">
 
     <!-- ── Brand Header ──────────────────────────────────────────────── -->
-    <div class="px-4 py-6 flex justify-content-center align-items-center text-center border-bottom-1" style="border-color: #2e2f30;">
+    <div class="px-4 py-6 flex justify-content-center align-items-center text-center border-bottom-1"
+        style="border-color: #2e2f30;">
         <span class="text-2xl font-bold text-white">ERP-Santi</span>
     </div>
 
@@ -9,23 +10,23 @@
     <div class="flex-grow-1 px-2 py-4 overflow-y-auto custom-scrollbar">
         <ul class="list-none p-0 m-0 flex flex-column gap-2">
             @for (item of menuItems; track item.label) {
-                @if (!item.permissions) {
-                <li class="px-2">
-                    <a pRipple [routerLink]="item.routerLink" routerLinkActive="active"
-                        [routerLinkActiveOptions]="{exact: true}" class="gemini-item p-ripple">
-                        <i [class]="item.icon + ' gemini-icon'"></i>
-                        <span class="font-medium">{{ item.label }}</span>
-                    </a>
-                </li>
-                } @else {
-                <li class="px-2" *appHasPermission="item.permissions || []">
-                    <a pRipple [routerLink]="item.routerLink" routerLinkActive="active"
-                        [routerLinkActiveOptions]="{exact: true}" class="gemini-item p-ripple">
-                        <i [class]="item.icon + ' gemini-icon'"></i>
-                        <span class="font-medium">{{ item.label }}</span>
-                    </a>
-                </li>
-                }
+            @if (!item.permissions) {
+            <li class="px-2">
+                <a pRipple [routerLink]="item.routerLink" routerLinkActive="active"
+                    [routerLinkActiveOptions]="{exact: true}" class="gemini-item p-ripple">
+                    <i [class]="item.icon + ' gemini-icon'"></i>
+                    <span class="font-medium">{{ item.label }}</span>
+                </a>
+            </li>
+            } @else {
+            <li class="px-2" *appHasPermission="item.permissions || []">
+                <a pRipple [routerLink]="item.routerLink" routerLinkActive="active"
+                    [routerLinkActiveOptions]="{exact: true}" class="gemini-item p-ripple">
+                    <i [class]="item.icon + ' gemini-icon'"></i>
+                    <span class="font-medium">{{ item.label }}</span>
+                </a>
+            </li>
+            }
             }
         </ul>
     </div>
@@ -37,8 +38,7 @@
 
         <!-- Cerrar Sesión -->
         <div class="px-2">
-            <a pRipple routerLink="/login"
-                class="gemini-item p-ripple logout-item">
+            <a pRipple routerLink="/login" class="gemini-item p-ripple logout-item">
                 <i class="pi pi-power-off gemini-icon"></i>
                 <span class="font-medium">Cerrar Sesión</span>
             </a>
