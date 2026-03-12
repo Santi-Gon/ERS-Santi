@@ -16,6 +16,5 @@ export class SidebarComponent {
   menuItems = [
     { label: 'Inicio', icon: 'pi pi-home', routerLink: '/home' },
     { label: 'Grupos', icon: 'pi pi-users', routerLink: '/group', permissions: ['groups_edit', 'groups_delete', 'groups_add'] },
-    { label: 'Usuarios', icon: 'pi pi-user', routerLink: '/user' }
   ];
 }

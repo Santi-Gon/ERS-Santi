@@ -1,0 +1,44 @@
+/* ── Navbar container ───────────────────────────────────────────────── */
+.navbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    padding: 0 1.25rem;
+    background-color: #1e1f20;
+    border-bottom: 1px solid #2e2f30;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-shrink: 0;
+}
+
+/* ── Brand text ─────────────────────────────────────────────────────── */
+.navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e3e3e3;
+    letter-spacing: 0.5px;
+}
+
+/* ── Toggle button override ─────────────────────────────────────────── */
+.navbar-toggle-btn {
+    color: #c4c7c5 !important;
+}
+.navbar-toggle-btn:hover {
+    background-color: #303134 !important;
+}
+
+/* ── Avatar ─────────────────────────────────────────────────────────── */
+.navbar-avatar {
+    background-color: #4fd1c5;
+    color: #131314;
+    font-weight: 700;
+    font-size: 0.85rem;
+    width: 36px !important;
+    height: 36px !important;
+    transition: opacity 0.2s;
+}
+.navbar-avatar:hover {
+    opacity: 0.85;
+}

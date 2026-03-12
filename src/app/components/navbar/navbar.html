@@ -1,0 +1,28 @@
+<nav class="navbar-container">
+
+    <!-- Left: Toggle Sidebar button + App Name -->
+    <div class="flex align-items-center gap-3">
+        <p-button icon="pi pi-bars" (onClick)="onToggle()"
+            [rounded]="true" [text]="true" severity="secondary"
+            pTooltip="Menu" tooltipPosition="right"
+            styleClass="navbar-toggle-btn">
+        </p-button>
+        <span class="navbar-brand">ERP-Santi</span>
+    </div>
+
+    <!-- Right: User profile area -->
+    <div class="flex align-items-center gap-3">
+        <div class="flex flex-column align-items-end mr-1" style="line-height: 1.3;">
+            <span class="font-semibold text-sm text-color">{{ currentUser.name }}</span>
+            <span class="text-xs text-color-secondary">{{ currentUser.email }}</span>
+        </div>
+        <p-avatar
+            [label]="currentUser.initials"
+            shape="circle"
+            styleClass="navbar-avatar cursor-pointer"
+            (click)="profileMenu.toggle($event)">
+        </p-avatar>
+        <p-menu #profileMenu [model]="profileMenuItems" [popup]="true" styleClass="shadow-4"></p-menu>
+    </div>
+
+</nav>

@@ -243,7 +243,7 @@
             <div class="p-3" *ngIf="editTicket">
 
                 <!-- Título -->
-                <div class="field mb-4">
+                <div class="field mb-5">
                     <label class="font-bold mb-2 block">Título *</label>
                     <input pInputText [(ngModel)]="editTicket.titulo" [disabled]="!isEditing && editTicket.id !== 0"
                         [ngClass]="{'ng-invalid ng-dirty': submitted && !editTicket.titulo}"
@@ -252,7 +252,7 @@
                 </div>
 
                 <!-- Descripción -->
-                <div class="field mb-4">
+                <div class="field mb-5">
                     <label class="font-bold mb-2 block">Descripción</label>
                     <textarea pTextarea [(ngModel)]="editTicket.descripcion"
                         [disabled]="!isEditing && editTicket.id !== 0"
@@ -260,7 +260,7 @@
                 </div>
 
                 <!-- Fila: Estado + Prioridad -->
-                <div class="formgrid grid mb-4">
+                <div class="formgrid grid mb-5">
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Estado</label>
                         <p-select [(ngModel)]="editTicket.estado"
@@ -278,7 +278,7 @@
                 </div>
 
                 <!-- Asignado A -->
-                <div class="field mb-4">
+                <div class="field mb-5">
                     <label class="font-bold mb-2 block">Asignado a *</label>
                     <p-select [(ngModel)]="editTicket.asignadoA"
                         [options]="miembroOptions" optionLabel="label" optionValue="value"
@@ -289,7 +289,7 @@
                 </div>
 
                 <!-- Fila: Fechas -->
-                <div class="formgrid grid mb-4">
+                <div class="formgrid grid mb-5">
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Fecha de Creación</label>
                         <!-- Always read-only -->
@@ -306,7 +306,7 @@
                 </div>
 
                 <!-- Comentarios -->
-                <div class="field mb-4">
+                <div class="field mb-5">
                     <label class="font-bold mb-2 block">Comentarios</label>
                     <textarea pTextarea [(ngModel)]="editTicket.comentarios"
                         [disabled]="!isEditing && editTicket.id !== 0"
@@ -319,8 +319,8 @@
                     <label class="font-bold mb-2 block">Historial de Cambios</label>
                     <ul class="list-none p-0 m-0">
                         <li *ngFor="let h of editTicket.historialCambios"
-                            class="text-sm text-color-secondary py-1 border-bottom-1 border-200">
-                            <i class="pi pi-clock mr-2"></i>{{ h }}
+                            class="text-sm text-color-secondary py-2 border-bottom-1 border-200 flex align-items-center gap-2">
+                            <i class="pi pi-clock flex-shrink-0"></i><span>{{ h }}</span>
                         </li>
                     </ul>
                 </div>

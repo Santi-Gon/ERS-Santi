@@ -78,37 +78,37 @@
         styleClass="p-fluid shadow-6" [dismissableMask]="true">
         <ng-template pTemplate="content">
             <div class="p-3">
-                <div class="field mb-4">
+                <div class="field mb-5">
                     <label for="nombre" class="font-bold mb-2 block">Nombre del Grupo</label>
                     <input type="text" pInputText id="nombre" [(ngModel)]="group.nombre" required autofocus
                         [ngClass]="{'ng-invalid ng-dirty': submitted && !group.nombre}" class="w-full p-3" />
                     <small class="p-error block mt-2" *ngIf="submitted && !group.nombre">El nombre es requerido.</small>
                 </div>
 
-                <div class="field mb-4">
+                <div class="field mb-5">
                     <label for="autor" class="font-bold mb-2 block">Autor</label>
                     <input type="text" pInputText id="autor" [(ngModel)]="group.autor" class="w-full p-3" />
                 </div>
 
-                <div class="formgrid grid">
-                    <div class="field col-12 md:col-4 mb-4">
+                <div class="formgrid grid mb-2">
+                    <div class="field col-12 md:col-4 mb-5">
                         <label for="nivel" class="font-bold mb-2 block">Nivel</label>
                         <p-inputNumber id="nivel" [(ngModel)]="group.nivel" [showButtons]="true" [min]="1" [max]="10"
                             styleClass="w-full"></p-inputNumber>
                     </div>
-                    <div class="field col-12 md:col-4 mb-4">
+                    <div class="field col-12 md:col-4 mb-5">
                         <label for="integrantes" class="font-bold mb-2 block">Integrantes</label>
                         <p-inputNumber id="integrantes" [(ngModel)]="group.integrantes" [showButtons]="true" [min]="0"
                             styleClass="w-full"></p-inputNumber>
                     </div>
-                    <div class="field col-12 md:col-4 mb-4">
+                    <div class="field col-12 md:col-4 mb-5">
                         <label for="tickets" class="font-bold mb-2 block">Tickets</label>
                         <p-inputNumber id="tickets" [(ngModel)]="group.tickets" [showButtons]="true" [min]="0"
                             styleClass="w-full"></p-inputNumber>
                     </div>
                 </div>
 
-                <div class="field mb-2">
+                <div class="field mb-3">
                     <label for="descripcion" class="font-bold mb-2 block">Descripción</label>
                     <textarea id="descripcion" pInputText [(ngModel)]="group.descripcion" rows="3"
                         class="w-full p-3"></textarea>
