@@ -12,12 +12,12 @@ import { TagModule } from 'primeng/tag';
 import { ChipModule } from 'primeng/chip';
 import { DividerModule } from 'primeng/divider';
 import { SelectModule } from 'primeng/select';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService } from 'primeng/api';
 
 import { PermissionService } from '../../services/permission.service';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
 const ALL_PERMISSIONS = [
   'ticket_add','ticket_edit','ticket_delete','ticket_view',
@@ -42,7 +42,8 @@ export interface AppUser {
     CommonModule, FormsModule,
     CardModule, ButtonModule, TableModule, DialogModule,
     InputTextModule, TagModule, ChipModule, DividerModule,
-    SelectModule, MultiSelectModule, ConfirmDialogModule, TooltipModule,
+    SelectModule, ConfirmDialogModule, TooltipModule,
+    HasPermissionDirective
   ],
   templateUrl: './admin-users.html',
   styleUrl: './admin-users.css'
@@ -58,7 +59,19 @@ export class AdminUsers implements OnInit {
   isEditing: boolean = false;
   submitted: boolean = false;
 
-  allPermissions = ALL_PERMISSIONS.map(p => ({ label: p, value: p }));
+  allPermissions = ALL_PERMISSIONS;
+
+  // Grouped labels for the permissions dialog
+  permGroups = [
+    { label: 'Tickets', key: 'ticket', perms: ALL_PERMISSIONS.filter(p => p.startsWith('ticket')) },
+    { label: 'Grupos',  key: 'groups', perms: ALL_PERMISSIONS.filter(p => p.startsWith('groups')) },
+    { label: 'Usuarios',key: 'users',  perms: ALL_PERMISSIONS.filter(p => p.startsWith('users'))  },
+  ];
+
+  // Permissions dialog state
+  permDialog: boolean = false;
+  permUser!: AppUser;
+  tempPerms: Set<string> = new Set();
 
   rolOptions = [
     { label: 'Admin',  value: 'Admin'  },
@@ -126,6 +139,35 @@ export class AdminUsers implements OnInit {
   toggleActive(u: AppUser) {
     this.users = this.users.map(x => x.id === u.id ? { ...x, activo: !x.activo } : x);
   }
+
+  // ── Permissions dialog ───────────────────────────────────────────────
+  openPermDialog(u: AppUser) {
+    this.permUser = u;
+    this.tempPerms = new Set(u.permisos);
+    this.permDialog = true;
+  }
+
+  hasPerm(p: string): boolean {
+    return this.tempPerms.has(p);
+  }
+
+  togglePerm(p: string) {
+    if (this.tempPerms.has(p)) {
+      this.tempPerms.delete(p);
+    } else {
+      this.tempPerms.add(p);
+    }
+  }
+
+  savePerms() {
+    const updated = Array.from(this.tempPerms);
+    this.users = this.users.map(u =>
+      u.id === this.permUser.id ? { ...u, permisos: updated } : u
+    );
+    this.permDialog = false;
+  }
+
+  closePermDialog() { this.permDialog = false; }
 
   rolSeverity(r: string): 'danger' | 'warn' | 'info' {
     return r === 'Admin' ? 'danger' : r === 'Editor' ? 'warn' : 'info';

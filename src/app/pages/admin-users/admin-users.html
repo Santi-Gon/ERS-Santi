@@ -6,7 +6,8 @@
             <h1 class="m-0 text-3xl font-bold">Gestión de Usuarios</h1>
             <p class="m-0 text-color-secondary mt-1">Administración y permisos del sistema</p>
         </div>
-        <p-button icon="pi pi-user-plus" label="Nuevo Usuario" (onClick)="openNew()" severity="success" styleClass="shadow-2"></p-button>
+        <p-button *appHasPermission="['users_add']" icon="pi pi-user-plus" label="Nuevo Usuario"
+            (onClick)="openNew()" severity="success" styleClass="shadow-2"></p-button>
     </div>
 
     <!-- ══ Users Table ═══════════════════════════════════════════════════════ -->
@@ -34,7 +35,7 @@
                     </td>
                     <td>
                         <div class="flex flex-wrap gap-1">
-                            <p-chip *ngFor="let p of u.permisos.slice(0,3)"
+                            <p-chip *ngFor="let p of u.permisos.slice(0, 3)"
                                 [label]="p" styleClass="text-xs perm-chip"></p-chip>
                             <p-chip *ngIf="u.permisos.length > 3"
                                 [label]="'+' + (u.permisos.length - 3) + ' más'"
@@ -47,13 +48,19 @@
                     </td>
                     <td class="text-center">
                         <div class="flex justify-content-center gap-1">
-                            <p-button icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true"
+                            <p-button *appHasPermission="['users_edit']"
+                                icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true"
                                 pTooltip="Editar usuario" (onClick)="editRow(u)"></p-button>
-                            <p-button [icon]="u.activo ? 'pi pi-ban' : 'pi pi-check-circle'"
-                                [text]="true" [severity]="u.activo ? 'warn' : 'success'" [rounded]="true"
+                            <p-button *appHasPermission="['users_edit']"
+                                icon="pi pi-key" [text]="true" severity="warn" [rounded]="true"
+                                pTooltip="Gestionar permisos" (onClick)="openPermDialog(u)"></p-button>
+                            <p-button *appHasPermission="['users_edit']"
+                                [icon]="u.activo ? 'pi pi-ban' : 'pi pi-check-circle'"
+                                [text]="true" [severity]="u.activo ? 'secondary' : 'success'" [rounded]="true"
                                 [pTooltip]="u.activo ? 'Desactivar' : 'Activar'"
                                 (onClick)="toggleActive(u)"></p-button>
-                            <p-button icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true"
+                            <p-button *appHasPermission="['users_delete']"
+                                icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true"
                                 pTooltip="Eliminar usuario" (onClick)="confirmDelete(u)"></p-button>
                         </div>
                     </td>
@@ -70,9 +77,9 @@
         </p-table>
     </p-card>
 
-    <!-- ══ User Dialog ══════════════════════════════════════════════════════ -->
+    <!-- ══ User Edit/Create Dialog ══════════════════════════════════════════ -->
     <p-dialog [(visible)]="userDialog"
-        [style]="{width: '650px'}"
+        [style]="{width: '550px'}"
         [header]="editUser && editUser.id === 0 ? 'Nuevo Usuario' : 'Editar Usuario'"
         [modal]="true" styleClass="p-fluid shadow-6" [dismissableMask]="true">
 
@@ -96,7 +103,7 @@
                     </div>
                 </div>
 
-                <div class="formgrid grid mb-5">
+                <div class="formgrid grid mb-4">
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Rol</label>
                         <p-select [(ngModel)]="editUser.rol" [options]="rolOptions"
@@ -116,20 +123,10 @@
                     </div>
                 </div>
 
-                <p-divider></p-divider>
-
-                <div class="field mb-3">
-                    <label class="font-bold mb-2 block">Permisos Asignados</label>
-                    <small class="text-color-secondary block mb-3">Selecciona los permisos que tendrá este usuario en el sistema.</small>
-                    <p-multiselect [(ngModel)]="editUser.permisos"
-                        [options]="allPermissions"
-                        optionLabel="label" optionValue="value"
-                        placeholder="Seleccionar permisos"
-                        [filter]="true"
-                        styleClass="w-full"
-                        display="chip">
-                    </p-multiselect>
-                    <small class="text-color-secondary mt-2 block">{{ editUser.permisos.length }} permiso(s) seleccionado(s).</small>
+                <div *ngIf="editUser && editUser.id !== 0" class="flex align-items-center gap-2 surface-100 border-round p-3">
+                    <i class="pi pi-key text-color-secondary"></i>
+                    <span class="text-sm text-color-secondary">Los permisos se gestionan con el botón
+                        <strong>🔑 Permisos</strong> en la tabla de usuarios.</span>
                 </div>
 
             </div>
@@ -139,8 +136,79 @@
             <div class="flex justify-content-end gap-2 pt-2">
                 <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
                     (onClick)="closeDialog()"></p-button>
-                <p-button label="Guardar" icon="pi pi-check" severity="primary"
-                    (onClick)="saveUser()"></p-button>
+                <ng-container *appHasPermission="['users_add']">
+                    <p-button *ngIf="editUser && editUser.id === 0"
+                        label="Guardar" icon="pi pi-check" severity="primary"
+                        (onClick)="saveUser()"></p-button>
+                </ng-container>
+                <ng-container *appHasPermission="['users_edit']">
+                    <p-button *ngIf="editUser && editUser.id !== 0"
+                        label="Guardar" icon="pi pi-check" severity="primary"
+                        (onClick)="saveUser()"></p-button>
+                </ng-container>
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- ══ Permissions Dialog ════════════════════════════════════════════════ -->
+    <p-dialog [(visible)]="permDialog"
+        [style]="{width: '520px'}"
+        [header]="'Permisos — ' + (permUser?.nombre ?? '')"
+        [modal]="true" styleClass="shadow-6" [dismissableMask]="true">
+
+        <ng-template pTemplate="content">
+            <div class="p-3" *ngIf="permUser">
+
+                <ng-container *ngFor="let group of permGroups; let last = last">
+                    <!-- Group heading -->
+                    <div class="flex align-items-center gap-2 mb-3">
+                        <span class="font-bold text-sm text-color-secondary uppercase tracking-widest">{{ group.label }}</span>
+                        <p-divider styleClass="flex-1 m-0"></p-divider>
+                    </div>
+
+                    <!-- Permission rows -->
+                    <div class="flex flex-column gap-2 mb-4">
+                        <div *ngFor="let p of group.perms"
+                            class="perm-row flex align-items-center justify-content-between px-3 py-3 border-round"
+                            [class.perm-active]="hasPerm(p)"
+                            [class.perm-inactive]="!hasPerm(p)">
+
+                            <div class="flex align-items-center gap-3">
+                                <!-- Status icon -->
+                                <i *ngIf="hasPerm(p)"  class="pi pi-check-circle text-xl" style="color:#16a34a"></i>
+                                <i *ngIf="!hasPerm(p)" class="pi pi-times-circle text-xl" style="color:#ef4444"></i>
+                                <!-- Permission name -->
+                                <span class="font-medium text-sm">{{ p }}</span>
+                            </div>
+
+                            <!-- Toggle button -->
+                            <p-button
+                                [label]="hasPerm(p) ? 'Quitar' : 'Dar'"
+                                [icon]="hasPerm(p) ? 'pi pi-minus' : 'pi pi-plus'"
+                                [severity]="hasPerm(p) ? 'danger' : 'success'"
+                                [outlined]="true"
+                                [text]="true"
+                                styleClass="perm-toggle-btn"
+                                (onClick)="togglePerm(p)">
+                            </p-button>
+                        </div>
+                    </div>
+                </ng-container>
+
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <div class="flex justify-content-between align-items-center pt-2">
+                <span class="text-sm text-color-secondary">
+                    {{ tempPerms.size }} permiso(s) activo(s)
+                </span>
+                <div class="flex gap-2">
+                    <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
+                        (onClick)="closePermDialog()"></p-button>
+                    <p-button label="Guardar Permisos" icon="pi pi-check" severity="primary"
+                        (onClick)="savePerms()"></p-button>
+                </div>
             </div>
         </ng-template>
     </p-dialog>
