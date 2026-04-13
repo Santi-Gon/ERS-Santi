@@ -29,7 +29,6 @@ export interface AppUser {
   id: number;
   nombre: string;
   email: string;
-  rol: 'Admin' | 'Editor' | 'Viewer';
   permisos: string[];
   activo: boolean;
 }
@@ -73,29 +72,23 @@ export class AdminUsers implements OnInit {
   permUser!: AppUser;
   tempPerms: Set<string> = new Set();
 
-  rolOptions = [
-    { label: 'Admin',  value: 'Admin'  },
-    { label: 'Editor', value: 'Editor' },
-    { label: 'Viewer', value: 'Viewer' },
-  ];
-
   ngOnInit() {
     this.users = [
-      { id: 1, nombre: 'Juan Pérez',   email: 'juan.perez@ers.com',  rol: 'Admin',  activo: true,
+      { id: 1, nombre: 'Juan Pérez',   email: 'juan.perez@ers.com',  activo: true,
         permisos: [...ALL_PERMISSIONS] },
-      { id: 2, nombre: 'María Gómez',  email: 'maria.gomez@ers.com', rol: 'Editor', activo: true,
+      { id: 2, nombre: 'María Gómez',  email: 'maria.gomez@ers.com', activo: true,
         permisos: ['ticket_add','ticket_edit','ticket_view','groups_edit'] },
-      { id: 3, nombre: 'Carlos Ruiz',  email: 'carlos.ruiz@ers.com', rol: 'Viewer', activo: true,
+      { id: 3, nombre: 'Carlos Ruiz',  email: 'carlos.ruiz@ers.com', activo: true,
         permisos: ['ticket_view'] },
-      { id: 4, nombre: 'Ana Flores',   email: 'ana.flores@ers.com',  rol: 'Editor', activo: false,
+      { id: 4, nombre: 'Ana Flores',   email: 'ana.flores@ers.com',  activo: false,
         permisos: ['ticket_add','ticket_edit','ticket_view'] },
-      { id: 5, nombre: 'Luis Torres',  email: 'luis.torres@ers.com', rol: 'Viewer', activo: true,
+      { id: 5, nombre: 'Luis Torres',  email: 'luis.torres@ers.com', activo: true,
         permisos: ['ticket_view','groups_edit'] },
     ];
   }
 
   openNew() {
-    this.editUser = { id: 0, nombre: '', email: '', rol: 'Viewer', permisos: [], activo: true };
+    this.editUser = { id: 0, nombre: '', email: '', permisos: [], activo: true };
     this.isEditing = true;
     this.submitted = false;
     this.userDialog = true;
@@ -168,8 +161,4 @@ export class AdminUsers implements OnInit {
   }
 
   closePermDialog() { this.permDialog = false; }
-
-  rolSeverity(r: string): 'danger' | 'warn' | 'info' {
-    return r === 'Admin' ? 'danger' : r === 'Editor' ? 'warn' : 'info';
-  }
 }
