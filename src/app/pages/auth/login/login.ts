@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -8,6 +8,8 @@ import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
+import { PermissionService } from '../../../services/permission.service';
 
 @Component({
   selector: 'app-login',
@@ -29,6 +31,9 @@ import { RouterModule, Router } from '@angular/router';
 export class Login {
   formularioLogin: FormGroup;
   cargando: boolean = false;
+  
+  private authService = inject(AuthService);
+  private permissionService = inject(PermissionService);
 
   constructor(
     private fb: FormBuilder,
@@ -54,24 +59,31 @@ export class Login {
     this.cargando = true;
     const { usuario, contrasenia } = this.formularioLogin.value;
 
-    // Simulamos una carga
-    setTimeout(() => {
-      if (usuario === 'admin' && contrasenia === 'admin123') {
+    this.authService.login(usuario, contrasenia).subscribe({
+      next: (res) => {
         this.messageService.add({
           severity: 'success',
           summary: 'Éxito',
           detail: 'Bienvenido al sistema'
         });
+        // Si el backend devuelve permisos, el interceptor ya guardó el token
+        // y podemos leer los permisos o actualizarlos aquí si es necesario
+        if (res.data?.[0]?.permissions) {
+           this.permissionService.setPermissions(res.data[0].permissions);
+        }
+        this.cargando = false;
         this.router.navigate(['/home']);
-      } else {
+      },
+      error: (err) => {
+        this.cargando = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Usuario o contraseña incorrectos'
+          detail: err.error?.data?.[0]?.message || 'Usuario o contraseña incorrectos'
         });
       }
-      this.cargando = false;
-    }, 1500);
+    });
   }
 }
+
 

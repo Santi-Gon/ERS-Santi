@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -12,6 +12,7 @@ import { MessageModule } from 'primeng/message';
 
 import { MessageService } from 'primeng/api';
 import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -38,6 +39,8 @@ export class Register {
   formularioRegistro: FormGroup;
   cargando: boolean = false;
   simbolosEspeciales: string = '@#$%^&*!';
+
+  private authService = inject(AuthService);
 
   constructor(
     private fb: FormBuilder,
@@ -105,18 +108,40 @@ export class Register {
     }
 
     this.cargando = true;
+    const form = this.formularioRegistro.value;
     
-    // Simulación de registro
-    setTimeout(() => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Registro Exitoso',
-        detail: 'Su cuenta ha sido creada correctamente.'
-      });
-      this.cargando = false;
-      // Redirigir al login después de un momento
-      setTimeout(() => this.router.navigate(['/login']), 2000);
-    }, 2000);
+    // Mapeo directo al DTO del backend
+    const payload = {
+      usuario: form.usuario,
+      nombre_completo: form.nombreCompleto,
+      email: form.email,
+      contrasenia: form.contrasenia,
+      direccion: form.direccion,
+      fecha_nacimiento: form.fechaNacimiento instanceof Date ? form.fechaNacimiento.toISOString().split('T')[0] : form.fechaNacimiento,
+      telefono: form.telefono
+    };
+
+    this.authService.register(payload).subscribe({
+      next: (res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Registro Exitoso',
+          detail: 'Su cuenta ha sido creada correctamente.'
+        });
+        this.cargando = false;
+        setTimeout(() => this.router.navigate(['/login']), 2000);
+      },
+      error: (err) => {
+        this.cargando = false;
+        const msg = err.error?.data?.[0]?.message || 'Ocurrió un error al registrarse.';
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: msg
+        });
+      }
+    });
   }
 }
+
 

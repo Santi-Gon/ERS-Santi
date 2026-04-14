@@ -5,14 +5,34 @@ import { Injectable, signal } from '@angular/core';
 })
 export class PermissionService {
   private userPermissions = signal<string[]>([]);
+  private readonly PERMS_KEY = 'ers_permissions';
 
-  constructor() {}
+  constructor() {
+    this.loadPermissions();
+  }
 
   /**
-   * Set the initial permissions array.
+   * Set the initial permissions array and save to localStorage.
    */
   setPermissions(permissions: string[]) {
     this.userPermissions.set(permissions);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.PERMS_KEY, JSON.stringify(permissions));
+    }
+  }
+
+  /**
+   * Load permissions from localStorage on app boot.
+   */
+  loadPermissions() {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(this.PERMS_KEY);
+      if (stored) {
+        try {
+          this.userPermissions.set(JSON.parse(stored));
+        } catch (e) {}
+      }
+    }
   }
 
   /**
@@ -21,9 +41,9 @@ export class PermissionService {
   hasPermission(permissionName: string | string[]): boolean {
     const permissions = this.userPermissions();
     if (Array.isArray(permissionName)) {
-      // Return true if the user has AT LEAST ONE of the required permissions
       return permissionName.some(p => permissions.includes(p));
     }
     return permissions.includes(permissionName);
   }
 }
+
