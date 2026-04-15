@@ -14,10 +14,13 @@ import { DividerModule } from 'primeng/divider';
 import { SelectModule } from 'primeng/select';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 import { PermissionService } from '../../services/permission.service';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
+import { UsersService } from '../../services/users.service';
+import { catchError, finalize, of } from 'rxjs';
 
 const ALL_PERMISSIONS = [
   'ticket_add','ticket_edit','ticket_delete','ticket_view',
@@ -26,22 +29,29 @@ const ALL_PERMISSIONS = [
 ];
 
 export interface AppUser {
-  id: number;
+  id: string;
   nombre: string;
   email: string;
   permisos: string[];
   activo: boolean;
+  // Campos para creación (fase siguiente: POST /users/add)
+  usuario?: string;
+  telefono?: string;
+  contrasenia?: string;
+  direccion?: string;
+  fecha_nacimiento?: string;
 }
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, MessageService],
   imports: [
     CommonModule, FormsModule,
     CardModule, ButtonModule, TableModule, DialogModule,
     InputTextModule, TagModule, ChipModule, DividerModule,
     SelectModule, ConfirmDialogModule, TooltipModule,
+    ToastModule,
     HasPermissionDirective
   ],
   templateUrl: './admin-users.html',
@@ -50,6 +60,8 @@ export interface AppUser {
 export class AdminUsers implements OnInit {
   private permissionService = inject(PermissionService);
   private confirmationService = inject(ConfirmationService);
+  private messageService = inject(MessageService);
+  private usersService = inject(UsersService);
   private router = inject(Router);
 
   users: AppUser[] = [];
@@ -57,6 +69,7 @@ export class AdminUsers implements OnInit {
   userDialog: boolean = false;
   isEditing: boolean = false;
   submitted: boolean = false;
+  loading: boolean = false;
 
   allPermissions = ALL_PERMISSIONS;
 
@@ -73,22 +86,53 @@ export class AdminUsers implements OnInit {
   tempPerms: Set<string> = new Set();
 
   ngOnInit() {
-    this.users = [
-      { id: 1, nombre: 'Juan Pérez',   email: 'juan.perez@ers.com',  activo: true,
-        permisos: [...ALL_PERMISSIONS] },
-      { id: 2, nombre: 'María Gómez',  email: 'maria.gomez@ers.com', activo: true,
-        permisos: ['ticket_add','ticket_edit','ticket_view','groups_edit'] },
-      { id: 3, nombre: 'Carlos Ruiz',  email: 'carlos.ruiz@ers.com', activo: true,
-        permisos: ['ticket_view'] },
-      { id: 4, nombre: 'Ana Flores',   email: 'ana.flores@ers.com',  activo: false,
-        permisos: ['ticket_add','ticket_edit','ticket_view'] },
-      { id: 5, nombre: 'Luis Torres',  email: 'luis.torres@ers.com', activo: true,
-        permisos: ['ticket_view','groups_edit'] },
-    ];
+    this.loadUsers();
+  }
+
+  loadUsers() {
+    this.loading = true;
+    this.usersService
+      .getAllUsers()
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ??
+            'No se pudo cargar la lista de usuarios.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: msg,
+          });
+          return of({ statusCode: 500, intOpCode: 1, data: [] as any[] });
+        }),
+        finalize(() => (this.loading = false)),
+      )
+      .subscribe((res) => {
+        const rows = res.data ?? [];
+        this.users = rows.map((u: any) => ({
+          id: u.id,
+          nombre: u.nombre_completo,
+          email: u.email,
+          permisos: u.permisos ?? [],
+          activo: !!u.activo,
+        }));
+      });
   }
 
   openNew() {
-    this.editUser = { id: 0, nombre: '', email: '', permisos: [], activo: true };
+    // UI ampliada, pero la creación real se conectará en una fase posterior.
+    this.editUser = {
+      id: '',
+      nombre: '',
+      email: '',
+      permisos: [],
+      activo: true,
+      usuario: '',
+      telefono: '',
+      contrasenia: '',
+      direccion: '',
+      fecha_nacimiento: '',
+    };
     this.isEditing = true;
     this.submitted = false;
     this.userDialog = true;
@@ -106,13 +150,45 @@ export class AdminUsers implements OnInit {
   saveUser() {
     this.submitted = true;
     if (!this.editUser.nombre.trim() || !this.editUser.email.trim()) return;
-    if (this.editUser.id === 0) {
-      this.editUser.id = Math.max(...this.users.map(u => u.id), 0) + 1;
-      this.users = [...this.users, { ...this.editUser }];
-    } else {
-      this.users = this.users.map(u => u.id === this.editUser.id ? { ...this.editUser } : u);
+    // Crear usuario (POST /users/add) queda para la siguiente fase
+    if (!this.editUser.id) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Pendiente',
+        detail: 'La creación de usuarios se conectará en la siguiente fase.',
+      });
+      return;
     }
-    this.closeDialog();
+
+    this.usersService
+      .updateUserAdmin(this.editUser.id, {
+        nombre_completo: this.editUser.nombre,
+        email: this.editUser.email,
+        activo: this.editUser.activo,
+      })
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ??
+            'No se pudo actualizar el usuario.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: msg,
+          });
+          return of(null);
+        }),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: res.data?.[0]?.message ?? 'Usuario actualizado correctamente.',
+        });
+        this.closeDialog();
+        this.loadUsers();
+      });
   }
 
   confirmDelete(u: AppUser) {
@@ -124,13 +200,60 @@ export class AdminUsers implements OnInit {
       rejectLabel: 'Cancelar',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.users = this.users.filter(x => x.id !== u.id);
+        this.usersService
+          .deleteUserAdmin(u.id)
+          .pipe(
+            catchError((err) => {
+              const msg =
+                err?.error?.data?.[0]?.message ??
+                'No se pudo eliminar el usuario.';
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: msg,
+              });
+              return of(null);
+            }),
+          )
+          .subscribe((res) => {
+            if (!res) return;
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Listo',
+              detail: res.data?.[0]?.message ?? 'Usuario eliminado.',
+            });
+            this.loadUsers();
+          });
       }
     });
   }
 
   toggleActive(u: AppUser) {
-    this.users = this.users.map(x => x.id === u.id ? { ...x, activo: !x.activo } : x);
+    const next = !u.activo;
+    this.usersService
+      .updateUserAdmin(u.id, { activo: next })
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ??
+            'No se pudo actualizar el estado.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: msg,
+          });
+          return of(null);
+        }),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: res.data?.[0]?.message ?? 'Estado actualizado.',
+        });
+        this.loadUsers();
+      });
   }
 
   // ── Permissions dialog ───────────────────────────────────────────────
@@ -154,10 +277,33 @@ export class AdminUsers implements OnInit {
 
   savePerms() {
     const updated = Array.from(this.tempPerms);
-    this.users = this.users.map(u =>
-      u.id === this.permUser.id ? { ...u, permisos: updated } : u
-    );
-    this.permDialog = false;
+    this.usersService
+      .updatePermissions(this.permUser.id, updated)
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ??
+            'No se pudieron actualizar los permisos.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: msg,
+          });
+          return of(null);
+        }),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail:
+            res.data?.[0]?.message ??
+            'Permisos actualizados correctamente.',
+        });
+        this.permDialog = false;
+        this.loadUsers();
+      });
   }
 
   closePermDialog() { this.permDialog = false; }

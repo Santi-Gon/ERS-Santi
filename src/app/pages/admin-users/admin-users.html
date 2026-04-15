@@ -1,4 +1,5 @@
 <div class="p-4">
+    <p-toast></p-toast>
 
     <!-- ══ Header ═══════════════════════════════════════════════════════════ -->
     <div class="flex align-items-center justify-content-between mb-5 flex-wrap gap-3">
@@ -13,6 +14,7 @@
     <!-- ══ Users Table ═══════════════════════════════════════════════════════ -->
     <p-card styleClass="shadow-2">
         <p-table [value]="users" [rowHover]="true" [paginator]="true" [rows]="10"
+                 [loading]="loading"
                  styleClass="p-datatable-sm" responsiveLayout="scroll">
 
             <ng-template pTemplate="header">
@@ -76,7 +78,7 @@
     <!-- ══ User Edit/Create Dialog ══════════════════════════════════════════ -->
     <p-dialog [(visible)]="userDialog"
         [style]="{width: '550px'}"
-        [header]="editUser && editUser.id === 0 ? 'Nuevo Usuario' : 'Editar Usuario'"
+        [header]="editUser && !editUser.id ? 'Nuevo Usuario' : 'Editar Usuario'"
         [modal]="true" styleClass="p-fluid shadow-6" [dismissableMask]="true">
 
         <ng-template pTemplate="content">
@@ -99,6 +101,39 @@
                     </div>
                 </div>
 
+                <!-- Campos extra para creación (fase siguiente: POST /users/add) -->
+                <div *ngIf="editUser && !editUser.id" class="surface-50 border-1 border-round p-3 mb-4">
+                    <div class="flex align-items-center gap-2 mb-3">
+                        <i class="pi pi-info-circle text-color-secondary"></i>
+                        <span class="text-sm text-color-secondary">
+                            Estos campos ya están listos en la UI, pero el guardado real se conectará en la siguiente fase.
+                        </span>
+                    </div>
+
+                    <div class="formgrid grid">
+                        <div class="field col-12 md:col-6">
+                            <label class="font-bold mb-2 block">Usuario (username) *</label>
+                            <input pInputText [(ngModel)]="editUser.usuario" class="w-full" placeholder="jperez" />
+                        </div>
+                        <div class="field col-12 md:col-6">
+                            <label class="font-bold mb-2 block">Teléfono (10 dígitos) *</label>
+                            <input pInputText [(ngModel)]="editUser.telefono" class="w-full" placeholder="5551234567" />
+                        </div>
+                        <div class="field col-12">
+                            <label class="font-bold mb-2 block">Contraseña temporal *</label>
+                            <input pInputText [(ngModel)]="editUser.contrasenia" class="w-full" placeholder="Min 10 + símbolo" />
+                        </div>
+                        <div class="field col-12">
+                            <label class="font-bold mb-2 block">Dirección (opcional)</label>
+                            <input pInputText [(ngModel)]="editUser.direccion" class="w-full" placeholder="Av. ..." />
+                        </div>
+                        <div class="field col-12 md:col-6">
+                            <label class="font-bold mb-2 block">Fecha de nacimiento (YYYY-MM-DD)</label>
+                            <input pInputText [(ngModel)]="editUser.fecha_nacimiento" class="w-full" placeholder="1990-05-15" />
+                        </div>
+                    </div>
+                </div>
+
                 <div class="field mb-4">
                     <div class="flex align-items-center gap-3">
                         <label class="font-bold">Estado:</label>
@@ -112,7 +147,7 @@
                     </div>
                 </div>
 
-                <div *ngIf="editUser && editUser.id !== 0" class="flex align-items-center gap-2 surface-100 border-round p-3">
+                <div *ngIf="editUser && !!editUser.id" class="flex align-items-center gap-2 surface-100 border-round p-3">
                     <i class="pi pi-key text-color-secondary"></i>
                     <span class="text-sm text-color-secondary">Los permisos se gestionan con el botón
                         <strong>🔑 Permisos</strong> en la tabla de usuarios.</span>
@@ -126,12 +161,12 @@
                 <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
                     (onClick)="closeDialog()"></p-button>
                 <ng-container *appHasPermission="['users_add']">
-                    <p-button *ngIf="editUser && editUser.id === 0"
+                    <p-button *ngIf="editUser && !editUser.id"
                         label="Guardar" icon="pi pi-check" severity="primary"
                         (onClick)="saveUser()"></p-button>
                 </ng-container>
                 <ng-container *appHasPermission="['users_edit']">
-                    <p-button *ngIf="editUser && editUser.id !== 0"
+                    <p-button *ngIf="editUser && !!editUser.id"
                         label="Guardar" icon="pi pi-check" severity="primary"
                         (onClick)="saveUser()"></p-button>
                 </ng-container>
