@@ -121,9 +121,32 @@ export class Group implements OnInit {
   }
 
   deleteGroup(g: AppGroup) {
-    this.groups = this.groups.filter(val => val.id !== g.id);
-    this.groupDialog = false;
-    this.updateTotalCount();
+    if (!g.id) return;
+    this.groupsService
+      .deleteGroup(g.id)
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ??
+            'No se pudo eliminar el grupo.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: msg,
+          });
+          return of(null);
+        }),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: res.data?.[0]?.message ?? 'Grupo eliminado correctamente.',
+        });
+        this.groupDialog = false;
+        this.loadGroups();
+      });
   }
 
   hideDialog() {
@@ -134,19 +157,69 @@ export class Group implements OnInit {
   saveGroup() {
     this.submitted = true;
 
-    if (this.group.nombre?.trim()) {
-      if (this.group.id) {
-        this.groups[this.findIndexById(this.group.id)] = this.group;
-      } else {
-        this.group.id = this.createId();
-        this.groups.push(this.group);
-      }
+    if (!this.group.nombre?.trim()) return;
 
-      this.groups = [...this.groups];
-      this.groupDialog = false;
-      this.group = {};
-      this.updateTotalCount();
+    const payload = {
+      nombre: this.group.nombre.trim(),
+      descripcion: this.group.descripcion?.trim() || undefined,
+    };
+
+    if (this.group.id) {
+      this.groupsService
+        .updateGroup(this.group.id, payload)
+        .pipe(
+          catchError((err) => {
+            const msg =
+              err?.error?.data?.[0]?.message ??
+              'No se pudo actualizar el grupo.';
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: msg,
+            });
+            return of(null);
+          }),
+        )
+        .subscribe((res) => {
+          if (!res) return;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Listo',
+            detail: res.data?.[0]?.message ?? 'Grupo actualizado correctamente.',
+          });
+          this.groupDialog = false;
+          this.group = {};
+          this.loadGroups();
+        });
+      return;
     }
+
+    this.groupsService
+      .createGroup(payload)
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ??
+            'No se pudo crear el grupo.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: msg,
+          });
+          return of(null);
+        }),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: res.data?.[0]?.message ?? 'Grupo creado correctamente.',
+        });
+        this.groupDialog = false;
+        this.group = {};
+        this.loadGroups();
+      });
   }
 
   // --- Add Member Functionality ---
@@ -183,23 +256,5 @@ export class Group implements OnInit {
     }
   }
 
-  findIndexById(id: string): number {
-    let index = -1;
-    for (let i = 0; i < this.groups.length; i++) {
-        if (this.groups[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-    return index;
-  }
-
-  createId(): string {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for ( var i = 0; i < 5; i++ ) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-  }
+  // findIndexById/createId removidos: el backend controla UUIDs.
 }

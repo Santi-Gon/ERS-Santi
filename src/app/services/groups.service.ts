@@ -40,5 +40,17 @@ export class GroupsService {
   getMyGroups(): Observable<ApiEnvelope<BackendGroupRow>> {
     return this.http.get<ApiEnvelope<BackendGroupRow>>(this.baseUrl);
   }
+
+  createGroup(payload: CreateGroupPayload): Observable<ApiEnvelope<any>> {
+    return this.http.post<ApiEnvelope<any>>(this.baseUrl, payload);
+  }
+
+  updateGroup(groupId: string, payload: UpdateGroupPayload): Observable<ApiEnvelope<any>> {
+    return this.http.patch<ApiEnvelope<any>>(`${this.baseUrl}/${groupId}`, payload);
+  }
+
+  deleteGroup(groupId: string): Observable<ApiEnvelope<any>> {
+    return this.http.delete<ApiEnvelope<any>>(`${this.baseUrl}/${groupId}`);
+  }
 }
 
