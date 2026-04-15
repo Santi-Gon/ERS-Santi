@@ -18,17 +18,29 @@ import { ChipModule } from 'primeng/chip';
 import { PermissionService } from '../../services/permission.service';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
+import { TicketsService, BackendTicket } from '../../services/tickets.service';
+import { GroupsService } from '../../services/groups.service';
+import { UsersService } from '../../services/users.service';
+import { catchError, finalize } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+
 export interface Ticket {
-  id: number;
+  id: string; // was number, now UUID string
   titulo: string;
   descripcion: string;
-  estado: 'pendiente' | 'en progreso' | 'revisión' | 'finalizada';
-  asignadoA: string;
-  prioridad: 'Alta' | 'Media' | 'Baja';
-  fechaCreacion: Date;
-  fechaLimite: Date;
-  comentarios: string;
-  historialCambios: string[];
+  estado: string; // 'pendiente' | 'en progreso' | 'revisión' | 'finalizada'
+  prioridad: string; // 'Alta' | 'Media' | 'Baja'
+  asignadoId: string | null;
+  asignadoNombre: string;
+  autorId: string;
+  autorNombre: string;
+  fechaCreacion: string | Date;
+  fechaLimite: string | Date | null;
+  historialCambios: any[];
+  comentariosArray: any[];
+  comentariosText?: string;
 }
 
 const CURRENT_USER = 'Juan Pérez';
@@ -40,9 +52,10 @@ const CURRENT_USER = 'Juan Pérez';
     CommonModule, FormsModule,
     CardModule, ButtonModule, TagModule, TableModule,
     DialogModule, InputTextModule, TextareaModule, SelectModule,
-    TooltipModule, DividerModule, ChipModule,
+    TooltipModule, DividerModule, ChipModule, ToastModule,
     HasPermissionDirective
   ],
+  providers: [MessageService],
   templateUrl: './group-tickets.html',
   styleUrl: './group-tickets.css'
 })
@@ -50,8 +63,12 @@ export class GroupTickets implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private permissionService = inject(PermissionService);
+  private ticketsService = inject(TicketsService);
+  private messageService = inject(MessageService);
+  private usersService = inject(UsersService);
+  private groupsService = inject(GroupsService);
 
-  groupId!: number;
+  groupId!: string; // Backend usa UUID (string) pero supongamos que lo extraemos de la URL. Si la URL tenia numeros, esto es string.
   groupName: string = '';
   isKanbanView: boolean = false;
 
@@ -84,68 +101,20 @@ export class GroupTickets implements OnInit {
     { label: 'Baja',  value: 'Baja' },
   ];
 
-  miembros = ['Juan Pérez', 'María Gómez', 'Carlos Ruiz', 'Ana Flores', 'Luis Torres'];
-  miembroOptions = this.miembros.map(m => ({ label: m, value: m }));
+  // Esto se debería llenar con la llamada a grupos (para simplificar usamos un mock adaptado a ID)
+  // Miembros reales del sistema:
+  miembroOptions: { label: string, value: string }[] = [];
+  allUsers: any[] | null = null;
+  groupMemberNames: string[] | null = null;
 
-  private groupsMap: Record<number, string> = {
-    101: 'Desarrollo Frontend',
-    102: 'Soporte Nivel 2',
-    103: 'QA & Testing',
+  private groupsMap: Record<string, string> = {
+    '101': 'Desarrollo Frontend',
+    '102': 'Soporte Nivel 2',
+    '103': 'QA & Testing',
   };
 
-  // ── Mock Tickets ──────────────────────────────────────────────────────
-  allGroupTickets: Ticket[] = [
-    {
-      id: 1, titulo: 'Error en pantalla de login', descripcion: 'Usuarios no pueden iniciar sesión desde Firefox.',
-      estado: 'pendiente', asignadoA: 'Juan Pérez', prioridad: 'Alta',
-      fechaCreacion: new Date('2026-03-01'), fechaLimite: new Date('2026-03-15'),
-      comentarios: 'Reproducido en Firefox 121+.', historialCambios: ['Creado el 01/03/2026']
-    },
-    {
-      id: 2, titulo: 'Actualizar dependencias npm', descripcion: 'Varias dependencias tienen vulnerabilidades.',
-      estado: 'en progreso', asignadoA: 'María Gómez', prioridad: 'Media',
-      fechaCreacion: new Date('2026-03-02'), fechaLimite: new Date('2026-03-20'),
-      comentarios: '', historialCambios: ['Creado el 02/03/2026', 'Iniciado el 05/03/2026']
-    },
-    {
-      id: 3, titulo: 'Agregar dark mode al dashboard', descripcion: 'Implementar modo oscuro.',
-      estado: 'pendiente', asignadoA: '', prioridad: 'Baja',
-      fechaCreacion: new Date('2026-03-03'), fechaLimite: new Date('2026-04-01'),
-      comentarios: '', historialCambios: ['Creado el 03/03/2026']
-    },
-    {
-      id: 4, titulo: 'Optimizar consultas SQL lentas', descripcion: 'Varias rutas tardan más de 3s.',
-      estado: 'revisión', asignadoA: 'Ana Flores', prioridad: 'Alta',
-      fechaCreacion: new Date('2026-03-04'), fechaLimite: new Date('2026-03-18'),
-      comentarios: 'Índices añadidos.', historialCambios: ['Creado el 04/03/2026', 'En revisión el 09/03/2026']
-    },
-    {
-      id: 5, titulo: 'Corrección de typos en docs', descripcion: 'Archivos README con errores tipográficos.',
-      estado: 'finalizada', asignadoA: 'Juan Pérez', prioridad: 'Baja',
-      fechaCreacion: new Date('2026-02-28'), fechaLimite: new Date('2026-03-10'),
-      comentarios: 'Completado.', historialCambios: ['Creado el 28/02/2026', 'Finalizado el 08/03/2026']
-    },
-    {
-      id: 6, titulo: 'Pruebas de regresión módulo pagos', descripcion: 'Suite completa de tests antes del release v2.',
-      estado: 'en progreso', asignadoA: 'Luis Torres', prioridad: 'Alta',
-      fechaCreacion: new Date('2026-03-05'), fechaLimite: new Date('2026-03-22'),
-      comentarios: '70% completado.', historialCambios: ['Creado el 05/03/2026']
-    },
-    {
-      id: 7, titulo: 'Refactorizar AuthService', descripcion: 'El AuthService tiene demasiadas responsabilidades.',
-      estado: 'pendiente', asignadoA: '', prioridad: 'Media',
-      fechaCreacion: new Date('2026-03-06'), fechaLimite: new Date('2026-03-30'),
-      comentarios: '', historialCambios: ['Creado el 06/03/2026']
-    },
-    {
-      id: 8, titulo: 'Paginación al listado de usuarios', descripcion: 'La tabla carga todos los registros.',
-      estado: 'revisión', asignadoA: 'Carlos Ruiz', prioridad: 'Media',
-      fechaCreacion: new Date('2026-03-07'), fechaLimite: new Date('2026-03-25'),
-      comentarios: '', historialCambios: ['Creado el 07/03/2026']
-    },
-  ];
-
   tickets: Ticket[] = [];
+  loading = false;
 
   // ── Stats ──────────────────────────────────────────────────────────────
   get totalTickets()    { return this.filteredTickets.length; }
@@ -157,8 +126,8 @@ export class GroupTickets implements OnInit {
   // ── Filtered list (applies active filters) ────────────────────────────
   get filteredTickets(): Ticket[] {
     let result = this.tickets;
-    if (this.filterMine)          result = result.filter(t => t.asignadoA === CURRENT_USER);
-    if (this.filterUnassigned)    result = result.filter(t => !t.asignadoA || t.asignadoA === '');
+    if (this.filterMine)          result = result.filter(t => t.asignadoNombre === CURRENT_USER);
+    if (this.filterUnassigned)    result = result.filter(t => !t.asignadoId);
     if (this.filterHighPriority)  result = result.filter(t => t.prioridad === 'Alta');
     return result;
   }
@@ -190,15 +159,74 @@ export class GroupTickets implements OnInit {
   }
 
   ngOnInit() {
-    this.groupId = Number(this.route.snapshot.paramMap.get('id'));
-    this.groupName = this.groupsMap[this.groupId] ?? `Grupo ${this.groupId}`;
-    const groupTicketIds: Record<number, number[]> = {
-      101: [1, 2, 3, 4],
-      102: [4, 5, 6],
-      103: [6, 7, 8],
-    };
-    const ids = groupTicketIds[this.groupId] ?? [];
-    this.tickets = this.allGroupTickets.filter(t => ids.includes(t.id));
+    this.groupId = this.route.snapshot.paramMap.get('id') || '';
+    this.groupName = `Grupo Cargando...`;
+    this.loadGroupDetails();
+    this.loadTickets();
+    this.loadUsersOptions();
+  }
+
+  loadGroupDetails() {
+    this.groupsService.getGrupoById(this.groupId).pipe(
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      if (res && res.data && res.data.length > 0) {
+          const g = res.data[0];
+          this.groupName = g.nombre || `Grupo ${this.groupId}`;
+          this.groupMemberNames = g.members || [];
+      } else {
+          this.groupName = `Grupo ${this.groupId}`;
+          this.groupMemberNames = [];
+      }
+      this.buildMiembroOptions();
+    });
+  }
+
+  loadUsersOptions() {
+    this.usersService.getAllUsers().pipe(
+      catchError(() => of({ data: [] }))
+    ).subscribe((res: any) => {
+      this.allUsers = res.data ?? [];
+      this.buildMiembroOptions();
+    });
+  }
+
+  buildMiembroOptions() {
+    if (this.allUsers !== null && this.groupMemberNames !== null) {
+      const filteredUsers = this.allUsers.filter((u: any) => this.groupMemberNames!.includes(u.nombre_completo));
+      this.miembroOptions = filteredUsers.map((u: any) => ({
+        label: u.nombre_completo,
+        value: u.id
+      }));
+    }
+  }
+
+  loadTickets() {
+    this.loading = true;
+    this.ticketsService.getTicketsByGroup(this.groupId).pipe(
+      catchError(err => {
+        this.messageService.add({severity: 'error', detail: 'No se pudieron cargar los tickets'});
+        return of([]);
+      }),
+      finalize(() => this.loading = false)
+    ).subscribe((res: any) => {
+      const data = res.data ?? [];
+      this.tickets = data.map((b: any) => ({
+        id: b.id,
+        titulo: b.titulo,
+        descripcion: b.descripcion || '',
+        estado: b.estado?.nombre || 'pendiente',
+        prioridad: b.prioridad?.nombre || 'Media',
+        asignadoId: b.asignado?.id || null,
+        asignadoNombre: b.asignado?.nombre_completo || '',
+        autorId: b.autor?.id,
+        autorNombre: b.autor?.nombre_completo || '',
+        fechaCreacion: b.creado_en,
+        fechaLimite: b.fecha_final || null,
+        historialCambios: b.historial || [],
+        comentariosArray: b.comentarios || []
+      }));
+    });
   }
 
   // ── Navigation ────────────────────────────────────────────────────────
@@ -225,18 +253,25 @@ export class GroupTickets implements OnInit {
     this.dropTargetColumn = null;
   }
 
-  onDrop(event: DragEvent, newEstado: Ticket['estado']) {
+  onDrop(event: DragEvent, newEstado: string) {
     event.preventDefault();
     if (this.draggingTicket && this.draggingTicket.estado !== newEstado) {
-      const idx = this.tickets.findIndex(t => t.id === this.draggingTicket!.id);
+      const ticketId = this.draggingTicket.id;
+      // Actualizamos localmente para fluidez visual rápida
+      const idx = this.tickets.findIndex(t => t.id === ticketId);
       if (idx !== -1) {
         this.tickets[idx].estado = newEstado;
-        this.tickets[idx].historialCambios = [
-          ...this.tickets[idx].historialCambios,
-          `Estado cambiado a "${newEstado}" el ${new Date().toLocaleDateString()}`
-        ];
-        this.tickets = [...this.tickets]; // trigger CD
+        this.tickets = [...this.tickets]; 
       }
+      
+      // Enviamos a la API
+      this.ticketsService.updateTicketState(ticketId, newEstado).pipe(
+        catchError(err => {
+          this.messageService.add({severity:'error', detail: 'No se pudo actualizar el estado'});
+          this.loadTickets(); // rollback
+          return of(null);
+        })
+      ).subscribe();
     }
     this.draggingTicket = null;
     this.dropTargetColumn = null;
@@ -247,10 +282,11 @@ export class GroupTickets implements OnInit {
     this.isEditing = true;
     this.submitted = false;
     this.editTicket = {
-      id: 0, titulo: '', descripcion: '',
-      estado: 'pendiente', asignadoA: '', prioridad: 'Media',
-      fechaCreacion: new Date(), fechaLimite: new Date(),
-      comentarios: '', historialCambios: []
+      id: '', titulo: '', descripcion: '',
+      estado: 'pendiente', prioridad: 'Media', asignadoId: null, asignadoNombre: '',
+      autorId: '', autorNombre: '',
+      fechaCreacion: new Date(), fechaLimite: null,
+      comentariosArray: [], historialCambios: []
     };
     this.ticketDialog = true;
   }
@@ -266,21 +302,69 @@ export class GroupTickets implements OnInit {
 
   saveTicket() {
     this.submitted = true;
-    if (!this.editTicket.titulo?.trim() || !this.editTicket.asignadoA) return;
-    if (this.editTicket.id === 0) {
-      const newId = Math.max(...this.tickets.map(t => t.id), 0) + 1;
-      const t: Ticket = { ...this.editTicket, id: newId, fechaCreacion: new Date() };
-      t.historialCambios = [`Creado el ${new Date().toLocaleDateString()}`];
-      this.tickets = [...this.tickets, t];
+    if (!this.editTicket.titulo?.trim()) return;
+
+    if (!this.editTicket.id || this.editTicket.id === '') {
+      // Create
+      const payload = {
+        grupo_id: this.groupId,
+        titulo: this.editTicket.titulo,
+        descripcion: this.editTicket.descripcion || undefined,
+        estado_nombre: this.editTicket.estado,
+        prioridad_nombre: this.editTicket.prioridad,
+        asignado_id: this.editTicket.asignadoId || undefined,
+        fecha_final: this.editTicket.fechaLimite ? new Date(this.editTicket.fechaLimite).toISOString() : undefined
+      };
+      
+      this.ticketsService.createTicket(payload).pipe(
+        catchError(err => {
+          this.messageService.add({severity: 'error', detail: err.error?.data?.[0]?.message || 'Error al crear', summary: 'Error'});
+          return of(null);
+        })
+      ).subscribe(res => {
+        if(res) {
+          this.messageService.add({severity: 'success', detail: 'Ticket creado'});
+          this.closeDialog();
+          this.loadTickets();
+        }
+      });
     } else {
-      this.editTicket.historialCambios.push(`Editado el ${new Date().toLocaleDateString()}`);
-      this.tickets = this.tickets.map(t => t.id === this.editTicket.id ? { ...this.editTicket } : t);
+      // Update
+      const payload = {
+        titulo: this.editTicket.titulo,
+        descripcion: this.editTicket.descripcion || undefined,
+        prioridad_nombre: this.editTicket.prioridad,
+        asignado_id: this.editTicket.asignadoId || null,
+        fecha_final: this.editTicket.fechaLimite ? new Date(this.editTicket.fechaLimite).toISOString() : null
+      };
+
+      this.ticketsService.updateTicket(this.editTicket.id, payload).pipe(
+        catchError(err => {
+          this.messageService.add({severity: 'error', detail: err.error?.data?.[0]?.message || 'Error al actualizar', summary: 'Error'});
+          return of(null);
+        })
+      ).subscribe(res => {
+        if(res) {
+          this.messageService.add({severity: 'success', detail: 'Ticket actualizado'});
+          this.closeDialog();
+          this.loadTickets();
+        }
+      });
     }
-    this.closeDialog();
   }
 
   deleteTicket(t: Ticket) {
-    this.tickets = this.tickets.filter(x => x.id !== t.id);
-    this.closeDialog();
+    this.ticketsService.deleteTicket(t.id).pipe(
+      catchError(err => {
+        this.messageService.add({severity: 'error', detail: err.error?.data?.[0]?.message || 'Error al eliminar', summary: 'Error'});
+        return of(null);
+      })
+    ).subscribe(res => {
+      if(res) {
+        this.messageService.add({severity: 'success', detail: 'Ticket eliminado'});
+        this.loadTickets();
+      }
+      this.closeDialog();
+    });
   }
 }

@@ -1,4 +1,5 @@
 <div class="tickets-container">
+    <p-toast></p-toast>
 
     <!-- ══ Header ══════════════════════════════════════════════════════════ -->
     <div class="flex align-items-center gap-3 mb-5">
@@ -141,7 +142,7 @@
                         <td class="font-semibold">{{ t.titulo }}</td>
                         <td><p-tag [severity]="estadoSeverity(t.estado)" [value]="t.estado"></p-tag></td>
                         <td>
-                            <span *ngIf="t.asignadoA; else noAsignado">{{ t.asignadoA }}</span>
+                            <span *ngIf="t.asignadoNombre; else noAsignado">{{ t.asignadoNombre }}</span>
                             <ng-template #noAsignado><span class="text-color-secondary text-xs italic">Sin asignar</span></ng-template>
                         </td>
                         <td><p-tag [severity]="prioridadSeverity(t.prioridad)" [value]="t.prioridad"></p-tag></td>
@@ -201,7 +202,7 @@
                         </div>
                         <div class="ticket-meta">
                             <i class="pi pi-user text-xs"></i>
-                            <span>{{ t.asignadoA || 'Sin asignar' }}</span>
+                            <span>{{ t.asignadoNombre || 'Sin asignar' }}</span>
                         </div>
                         <div class="ticket-meta">
                             <i class="pi pi-calendar text-xs"></i>
@@ -244,7 +245,7 @@
                         </div>
                         <div class="ticket-meta">
                             <i class="pi pi-user text-xs"></i>
-                            <span>{{ t.asignadoA || 'Sin asignar' }}</span>
+                            <span>{{ t.asignadoNombre || 'Sin asignar' }}</span>
                         </div>
                         <div class="ticket-meta">
                             <i class="pi pi-calendar text-xs"></i>
@@ -287,7 +288,7 @@
                         </div>
                         <div class="ticket-meta">
                             <i class="pi pi-user text-xs"></i>
-                            <span>{{ t.asignadoA || 'Sin asignar' }}</span>
+                            <span>{{ t.asignadoNombre || 'Sin asignar' }}</span>
                         </div>
                         <div class="ticket-meta">
                             <i class="pi pi-calendar text-xs"></i>
@@ -330,7 +331,7 @@
                         </div>
                         <div class="ticket-meta">
                             <i class="pi pi-user text-xs"></i>
-                            <span>{{ t.asignadoA || 'Sin asignar' }}</span>
+                            <span>{{ t.asignadoNombre || 'Sin asignar' }}</span>
                         </div>
                         <div class="ticket-meta">
                             <i class="pi pi-calendar text-xs"></i>
@@ -352,7 +353,7 @@
     <!-- ══ TICKET DIALOG ════════════════════════════════════════════════════ -->
     <p-dialog [(visible)]="ticketDialog"
         [style]="{width: '680px'}"
-        [header]="editTicket && editTicket.id === 0 ? 'Nuevo Ticket' : (isEditing ? 'Editar Ticket' : 'Detalles del Ticket')"
+        [header]="editTicket && editTicket.id === '' ? 'Nuevo Ticket' : (isEditing ? 'Editar Ticket' : 'Detalles del Ticket')"
         [modal]="true" styleClass="p-fluid shadow-6" [dismissableMask]="true">
 
         <ng-template pTemplate="content">
@@ -360,7 +361,7 @@
 
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Título *</label>
-                    <input pInputText [(ngModel)]="editTicket.titulo" [disabled]="!isEditing && editTicket.id !== 0"
+                    <input pInputText [(ngModel)]="editTicket.titulo" [disabled]="!isEditing && editTicket.id !== ''"
                         [ngClass]="{'ng-invalid ng-dirty': submitted && !editTicket.titulo}"
                         class="w-full" placeholder="Título del ticket" />
                     <small class="p-error" *ngIf="submitted && !editTicket.titulo">El título es requerido.</small>
@@ -369,7 +370,7 @@
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Descripción</label>
                     <textarea pTextarea [(ngModel)]="editTicket.descripcion"
-                        [disabled]="!isEditing && editTicket.id !== 0"
+                        [disabled]="!isEditing && editTicket.id !== ''"
                         rows="3" class="w-full" placeholder="Describe el ticket..."></textarea>
                 </div>
 
@@ -378,26 +379,26 @@
                         <label class="font-bold mb-2 block">Estado</label>
                         <p-select [(ngModel)]="editTicket.estado" [options]="estadoOptions"
                             optionLabel="label" optionValue="value"
-                            [disabled]="!isEditing && editTicket.id !== 0"
+                            [disabled]="!isEditing && editTicket.id !== ''"
                             styleClass="w-full"></p-select>
                     </div>
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Prioridad</label>
                         <p-select [(ngModel)]="editTicket.prioridad" [options]="prioridadOptions"
                             optionLabel="label" optionValue="value"
-                            [disabled]="!isEditing && editTicket.id !== 0"
+                            [disabled]="!isEditing && editTicket.id !== ''"
                             styleClass="w-full"></p-select>
                     </div>
                 </div>
 
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Asignado a *</label>
-                    <p-select [(ngModel)]="editTicket.asignadoA" [options]="miembroOptions"
+                    <p-select [(ngModel)]="editTicket.asignadoId" [options]="miembroOptions"
                         optionLabel="label" optionValue="value"
-                        [disabled]="!isEditing && editTicket.id !== 0"
-                        [ngClass]="{'ng-invalid ng-dirty': submitted && !editTicket.asignadoA}"
+                        [disabled]="!isEditing && editTicket.id !== ''"
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !editTicket.asignadoId}"
                         styleClass="w-full" placeholder="Selecciona un miembro"></p-select>
-                    <small class="p-error" *ngIf="submitted && !editTicket.asignadoA">El responsable es requerido.</small>
+                    <small class="p-error" *ngIf="submitted && !editTicket.asignadoId">El responsable es requerido.</small>
                 </div>
 
                 <div class="formgrid grid mb-5">
@@ -410,14 +411,14 @@
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Fecha Límite</label>
                         <input pInputText type="date" [(ngModel)]="editTicket.fechaLimite"
-                            [disabled]="!isEditing && editTicket.id !== 0" class="w-full" />
+                            [disabled]="!isEditing && editTicket.id !== ''" class="w-full" />
                     </div>
                 </div>
 
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Comentarios</label>
-                    <textarea pTextarea [(ngModel)]="editTicket.comentarios"
-                        [disabled]="!isEditing && editTicket.id !== 0"
+                    <textarea pTextarea [(ngModel)]="editTicket.comentariosText"
+                        [disabled]="!isEditing && editTicket.id !== ''"
                         rows="2" class="w-full" placeholder="Comentarios adicionales..."></textarea>
                 </div>
 
@@ -438,19 +439,19 @@
         <ng-template pTemplate="footer">
             <div class="flex justify-content-between align-items-center w-full pt-2">
                 <ng-container *appHasPermission="['ticket_delete']">
-                    <p-button *ngIf="editTicket && editTicket.id !== 0"
+                    <p-button *ngIf="editTicket && editTicket.id !== ''"
                         icon="pi pi-trash" label="Eliminar" severity="danger" [text]="true"
                         (onClick)="deleteTicket(editTicket)"></p-button>
                 </ng-container>
                 <div class="flex gap-2 ml-auto">
                     <ng-container *appHasPermission="['ticket_edit']">
-                        <p-button *ngIf="editTicket && editTicket.id !== 0 && !isEditing"
+                        <p-button *ngIf="editTicket && editTicket.id !== '' && !isEditing"
                             icon="pi pi-pencil" label="Editar" severity="info" [outlined]="true"
                             (onClick)="isEditing = true"></p-button>
                     </ng-container>
                     <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
                         (onClick)="closeDialog()"></p-button>
-                    <p-button *ngIf="isEditing || (editTicket && editTicket.id === 0)"
+                    <p-button *ngIf="isEditing || (editTicket && editTicket.id === '')"
                         label="Guardar" icon="pi pi-check" severity="primary"
                         (onClick)="saveTicket()"></p-button>
                 </div>

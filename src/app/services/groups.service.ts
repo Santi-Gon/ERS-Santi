@@ -41,6 +41,10 @@ export class GroupsService {
     return this.http.get<ApiEnvelope<BackendGroupRow>>(this.baseUrl);
   }
 
+  getGrupoById(groupId: string): Observable<ApiEnvelope<BackendGroupRow>> {
+    return this.http.get<ApiEnvelope<BackendGroupRow>>(`${this.baseUrl}/${groupId}`);
+  }
+
   createGroup(payload: CreateGroupPayload): Observable<ApiEnvelope<any>> {
     return this.http.post<ApiEnvelope<any>>(this.baseUrl, payload);
   }
