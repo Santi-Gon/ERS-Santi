@@ -240,20 +240,36 @@ export class Group implements OnInit {
   saveMember() {
     this.addMemberSubmitted = true;
 
-    // Simulate sending invitation and adding member if email is valid-ish
-    if (this.newMemberEmail?.trim().includes('@')) {
-      if (this.selectedGroupForMember) {
-        // Find group and increment integrantes
-        const index = this.findIndexById(this.selectedGroupForMember.id!);
-        if (index !== -1) {
-           const currentIntegrantes = this.groups[index].integrantes || 0;
-           this.groups[index].integrantes = currentIntegrantes + 1;
-           // Trigger change detection for pure pipes/components by re-assigning
-           this.groups = [...this.groups];
-        }
-      }
-      this.closeAddMemberDialog();
-    }
+    if (!this.newMemberEmail?.trim().includes('@')) return;
+    if (!this.selectedGroupForMember || !this.selectedGroupForMember.id) return;
+
+    const payload = { email: this.newMemberEmail.trim() };
+
+    this.groupsService
+      .addMember(this.selectedGroupForMember.id, payload)
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ??
+            'No se pudo añadir al integrante.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: msg,
+          });
+          return of(null);
+        }),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: res.data?.[0]?.message ?? 'Integrante añadido correctamente.',
+        });
+        this.closeAddMemberDialog();
+        this.loadGroups();
+      });
   }
 
   // findIndexById/createId removidos: el backend controla UUIDs.

@@ -52,5 +52,9 @@ export class GroupsService {
   deleteGroup(groupId: string): Observable<ApiEnvelope<any>> {
     return this.http.delete<ApiEnvelope<any>>(`${this.baseUrl}/${groupId}`);
   }
+
+  addMember(groupId: string, payload: { email: string }): Observable<ApiEnvelope<any>> {
+    return this.http.post<ApiEnvelope<any>>(`${this.baseUrl}/${groupId}/miembros`, payload);
+  }
 }
 
