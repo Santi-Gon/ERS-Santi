@@ -160,7 +160,7 @@ export class GroupTickets implements OnInit {
 
   ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('id') || '';
-    this.groupName = `Grupo Cargando...`;
+    this.groupName = `Grupo ${this.groupId}`;
     this.loadGroupDetails();
     this.loadTickets();
     this.loadUsersOptions();
