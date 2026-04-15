@@ -6,6 +6,8 @@ import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { PermissionService } from '../../services/permission.service';
+import { GroupsService } from '../../services/groups.service';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -17,6 +19,7 @@ import { PermissionService } from '../../services/permission.service';
 export class Home implements OnInit {
   private permissionService = inject(PermissionService);
   private router = inject(Router);
+  private groupsService = inject(GroupsService);
 
   // Stats
   highPriorityCount = 0;
@@ -28,12 +31,12 @@ export class Home implements OnInit {
   // Mock data for current user
   currentUserId = 1;
 
-  // Mock Groups
-  myGroups = [
-    { id: 101, name: 'Desarrollo Frontend', description: 'Equipo encargado del dashboard en Angular', membersCount: 5 },
-    { id: 102, name: 'Soporte Nivel 2', description: 'Atención a tickets técnicos avanzados', membersCount: 8 },
-    { id: 103, name: 'QA & Testing', description: 'Pruebas automatizadas y manuales', membersCount: 3 }
-  ];
+  myGroups: Array<{
+    id: string;
+    name: string;
+    description: string;
+    membersCount: number;
+  }> = [];
 
   // Mock Tickets
   allTickets = [
@@ -48,6 +51,7 @@ export class Home implements OnInit {
   ngOnInit() {
     this.checkPermissions();
     this.calculateStats();
+    this.loadMyGroups();
   }
 
   private checkPermissions() {
@@ -69,7 +73,26 @@ export class Home implements OnInit {
     this.lowPriorityCount = ticketsToAnalyze.filter(t => t.priority === 'Baja').length;
   }
 
-  goToGroupDetails(groupId: number) {
+  private loadMyGroups() {
+    this.groupsService
+      .getMyGroups()
+      .pipe(
+        catchError(() =>
+          of({ statusCode: 500, intOpCode: 1, data: [] as any[] }),
+        ),
+      )
+      .subscribe((res) => {
+        const rows = res.data ?? [];
+        this.myGroups = rows.map((g: any) => ({
+          id: g.id,
+          name: g.nombre,
+          description: g.descripcion ?? 'Sin descripción',
+          membersCount: g.integrantes ?? 0,
+        }));
+      });
+  }
+
+  goToGroupDetails(groupId: string) {
     this.router.navigate(['/group', groupId, 'tickets']);
   }
 }

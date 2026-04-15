@@ -1,4 +1,5 @@
 <div class="p-4">
+    <p-toast></p-toast>
     <!-- Header with Action Button -->
     <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-6">
         <div class="mb-3 md:mb-0 flex align-items-center gap-2">
@@ -19,15 +20,6 @@
                 <!-- Added border-1 border-300 for contrast -->
                 <p-card [header]="g.nombre"
                     styleClass="h-full shadow-2 hover:shadow-4 border-1 border-300 transition-all transition-duration-200">
-                    <!-- Nivel Tag as Subtitle -->
-                    <ng-template pTemplate="subtitle">
-                        <div class="flex align-items-center mb-2">
-                            <span class="font-medium mr-2 text-600">Nivel:</span>
-                            <p-tag [severity]="g.nivel === 1 ? 'info' : 'warn'"
-                                [value]="g.nivel?.toString() || ''"></p-tag>
-                        </div>
-                    </ng-template>
-
                     <!-- Content Details -->
                     <p class="m-0 text-secondary mb-4" style="min-height: 3rem;">
                         {{ g.descripcion || 'Sin descripción' }}
@@ -38,7 +30,7 @@
                             <span class="text-600 font-medium flex align-items-center gap-2">
                                 <i class="pi pi-user"></i> Líder:
                             </span>
-                            <span class="font-bold text-right text-color">{{ g.autor }}</span>
+                            <span class="font-bold text-right text-color">{{ g.lider || '—' }}</span>
                         </div>
                         <div class="flex justify-content-between align-items-center">
                             <span class="text-600 font-medium flex align-items-center gap-2">
@@ -97,29 +89,6 @@
                     <input type="text" pInputText id="nombre" [(ngModel)]="group.nombre" required autofocus
                         [ngClass]="{'ng-invalid ng-dirty': submitted && !group.nombre}" class="w-full p-3" />
                     <small class="p-error block mt-2" *ngIf="submitted && !group.nombre">El nombre es requerido.</small>
-                </div>
-
-                <div class="field mb-5">
-                    <label for="autor" class="font-bold mb-2 block">Autor</label>
-                    <input type="text" pInputText id="autor" [(ngModel)]="group.autor" class="w-full p-3" />
-                </div>
-
-                <div class="formgrid grid mb-2">
-                    <div class="field col-12 md:col-4 mb-5">
-                        <label for="nivel" class="font-bold mb-2 block">Nivel</label>
-                        <p-inputNumber id="nivel" [(ngModel)]="group.nivel" [showButtons]="true" [min]="1" [max]="10"
-                            styleClass="w-full"></p-inputNumber>
-                    </div>
-                    <div class="field col-12 md:col-4 mb-5">
-                        <label for="integrantes" class="font-bold mb-2 block">Integrantes</label>
-                        <p-inputNumber id="integrantes" [(ngModel)]="group.integrantes" [showButtons]="true" [min]="0"
-                            styleClass="w-full"></p-inputNumber>
-                    </div>
-                    <div class="field col-12 md:col-4 mb-5">
-                        <label for="tickets" class="font-bold mb-2 block">Tickets</label>
-                        <p-inputNumber id="tickets" [(ngModel)]="group.tickets" [showButtons]="true" [min]="0"
-                            styleClass="w-full"></p-inputNumber>
-                    </div>
                 </div>
 
                 <div class="field mb-3">
