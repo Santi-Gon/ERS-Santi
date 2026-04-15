@@ -142,7 +142,7 @@
     <!-- ══ Permissions Dialog ════════════════════════════════════════════════ -->
     <p-dialog [(visible)]="permDialog"
         [style]="{width: '520px'}"
-        [header]="'Permisos — ' + (permUser?.nombre ?? '')"
+        [header]="'Permisos — ' + (permUser ? permUser.nombre : '')"
         [modal]="true" styleClass="shadow-6" [dismissableMask]="true">
 
         <ng-template pTemplate="content">
