@@ -14,7 +14,9 @@ import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { UsersService } from '../../services/users.service';
-import { catchError, finalize, of } from 'rxjs';
+import { TicketsService } from '../../services/tickets.service';
+import { GroupsService } from '../../services/groups.service';
+import { catchError, finalize, of, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-user',
@@ -40,8 +42,12 @@ import { catchError, finalize, of } from 'rxjs';
 })
 export class User implements OnInit {
   private usersService = inject(UsersService);
+  private ticketsService = inject(TicketsService);
+  private groupsService = inject(GroupsService);
   private messageService = inject(MessageService);
   private fb = inject(FormBuilder);
+
+  currentUserId: string = '';
 
   userInfo = {
     username: 'admin2026',
@@ -54,15 +60,8 @@ export class User implements OnInit {
     initials: 'JP'
   };
 
-  // Mock assigned tickets
-  assignedTickets = [
-    { id: 1, titulo: 'Error en pantalla de login', estado: 'pendiente', prioridad: 'Alta',
-      fechaCreacion: new Date('2026-03-01'), fechaLimite: new Date('2026-03-15'), grupo: 'Desarrollo Frontend' },
-    { id: 5, titulo: 'Corrección de typos en docs', estado: 'finalizada', prioridad: 'Baja',
-      fechaCreacion: new Date('2026-02-28'), fechaLimite: new Date('2026-03-10'), grupo: 'QA & Testing' },
-    { id: 9, titulo: 'Revisión de diseño de login', estado: 'en progreso', prioridad: 'Media',
-      fechaCreacion: new Date('2026-03-08'), fechaLimite: new Date('2026-03-22'), grupo: 'Desarrollo Frontend' },
-  ];
+  // Mock assigned tickets removed, using backend array
+  assignedTickets: any[] = [];
 
   get ticketsAbiertos()   { return this.assignedTickets.filter(t => t.estado === 'pendiente').length; }
   get ticketsEnProgreso() { return this.assignedTickets.filter(t => t.estado === 'en progreso').length; }
@@ -156,6 +155,7 @@ export class User implements OnInit {
       .subscribe((res) => {
         const me = res.data?.[0];
         if (!me) return;
+        this.currentUserId = me.id;
         this.userInfo.username = me.usuario;
         this.userInfo.fullName = me.nombre_completo;
         this.userInfo.email = me.email;
@@ -163,7 +163,45 @@ export class User implements OnInit {
         this.userInfo.birthDate = me.fecha_nacimiento ?? '';
         this.userInfo.phone = me.telefono ?? '';
         this.recomputeInitialsAndAge();
+
+        this.loadAssignedTickets();
       });
+  }
+
+  loadAssignedTickets() {
+    this.groupsService.getMyGroups().pipe(catchError(() => of({data: []}))).subscribe((res: any) => {
+       const groups = res.data || [];
+       if (!groups.length) {
+          this.assignedTickets = [];
+          return;
+       }
+       const requests = groups.map((g: any) => 
+           this.ticketsService.getTicketsByGroup(g.id).pipe(
+              catchError(() => of({ data: [] }))
+           )
+       );
+       
+       forkJoin(requests).subscribe((results: any) => {
+          let myTickets: any[] = [];
+          results.forEach((r: any, idx: number) => {
+             const groupName = groups[idx].nombre;
+             const tks = r.data || [];
+             const filtered = tks.filter((t: any) => t.asignado?.id === this.currentUserId);
+             filtered.forEach((t: any) => {
+                myTickets.push({
+                   id: t.id,
+                   titulo: t.titulo,
+                   estado: t.estado?.nombre || 'pendiente',
+                   prioridad: t.prioridad?.nombre || 'Media',
+                   fechaCreacion: t.creado_en ? new Date(t.creado_en) : null,
+                   fechaLimite: t.fecha_final ? new Date(t.fecha_final) : null,
+                   grupo: groupName
+                });
+             });
+          });
+          this.assignedTickets = myTickets;
+       });
+    });
   }
 
   openEditDialog() {

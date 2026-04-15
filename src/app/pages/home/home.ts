@@ -7,7 +7,9 @@ import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { PermissionService } from '../../services/permission.service';
 import { GroupsService } from '../../services/groups.service';
-import { catchError, of } from 'rxjs';
+import { UsersService } from '../../services/users.service';
+import { TicketsService } from '../../services/tickets.service';
+import { catchError, of, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -20,6 +22,8 @@ export class Home implements OnInit {
   private permissionService = inject(PermissionService);
   private router = inject(Router);
   private groupsService = inject(GroupsService);
+  private usersService = inject(UsersService);
+  private ticketsService = inject(TicketsService);
 
   // Stats
   highPriorityCount = 0;
@@ -28,8 +32,8 @@ export class Home implements OnInit {
   assignedTicketsCount = 0;
   isMaster = false;
 
-  // Mock data for current user
-  currentUserId = 1;
+  // Real user ID UUID
+  currentUserId: string = '';
 
   myGroups: Array<{
     id: string;
@@ -38,20 +42,18 @@ export class Home implements OnInit {
     membersCount: number;
   }> = [];
 
-  // Mock Tickets
-  allTickets = [
-    { id: 1, title: 'Error en login', status: 'pendiente', assignedTo: 1, priority: 'Alta', groupId: 101 },
-    { id: 2, title: 'Actualizar dependencias', status: 'en progreso', assignedTo: 1, priority: 'Media', groupId: 101 },
-    { id: 3, title: 'Revisar logs de servidor', status: 'revisión', assignedTo: 2, priority: 'Alta', groupId: 102 },
-    { id: 4, title: 'Botón desfasado', status: 'pendiente', assignedTo: 3, priority: 'Baja', groupId: 101 },
-    { id: 5, title: 'Corregir typos en docs', status: 'finalizada', assignedTo: 1, priority: 'Baja', groupId: 103 },
-    { id: 6, title: 'Testing de API', status: 'pendiente', assignedTo: 2, priority: 'Media', groupId: 103 },
-  ];
+  allTickets: any[] = [];
 
   ngOnInit() {
     this.checkPermissions();
-    this.calculateStats();
-    this.loadMyGroups();
+    // 1. Obtener mi UUID
+    this.usersService.getMe().pipe(catchError(() => of(null))).subscribe((meRes: any) => {
+      if (meRes && meRes.data && meRes.data.length > 0) {
+        this.currentUserId = meRes.data[0].id;
+      }
+      // 2. Cargar mis grupos
+      this.loadMyGroups();
+    });
   }
 
   private checkPermissions() {
@@ -89,6 +91,36 @@ export class Home implements OnInit {
           description: g.descripcion ?? 'Sin descripción',
           membersCount: g.integrantes ?? 0,
         }));
+        
+        if (this.myGroups.length > 0) {
+          this.loadGlobalTickets();
+        } else {
+          this.allTickets = [];
+          this.calculateStats();
+        }
+      });
+  }
+
+  private loadGlobalTickets() {
+      const requests = this.myGroups.map(g => this.ticketsService.getTicketsByGroup(g.id).pipe(catchError(() => of({ data: [] }))));
+      forkJoin(requests).subscribe(results => {
+          let globalTickets: any[] = [];
+          results.forEach((res: any) => {
+              if (res && res.data) {
+                  globalTickets = globalTickets.concat(res.data);
+              }
+          });
+          
+          this.allTickets = globalTickets.map((b: any) => ({
+              id: b.id,
+              title: b.titulo,
+              status: b.estado?.nombre || 'pendiente',
+              assignedTo: b.asignado?.id || null, 
+              priority: b.prioridad?.nombre || 'Media',
+              groupId: b.grupo_id
+          }));
+          
+          this.calculateStats();
       });
   }
 
