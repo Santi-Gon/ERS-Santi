@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
 import { TagModule } from 'primeng/tag';
 import { ChipModule } from 'primeng/chip';
 import { DividerModule } from 'primeng/divider';
@@ -16,6 +17,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { InputMaskModule } from 'primeng/inputmask';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 import { PermissionService } from '../../services/permission.service';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
@@ -51,6 +54,7 @@ export interface AppUser {
     CardModule, ButtonModule, TableModule, DialogModule,
     InputTextModule, TagModule, ChipModule, DividerModule,
     SelectModule, ConfirmDialogModule, TooltipModule,
+    PasswordModule, InputMaskModule, MultiSelectModule,
     ToastModule,
     HasPermissionDirective
   ],
@@ -150,13 +154,45 @@ export class AdminUsers implements OnInit {
   saveUser() {
     this.submitted = true;
     if (!this.editUser.nombre.trim() || !this.editUser.email.trim()) return;
-    // Crear usuario (POST /users/add) queda para la siguiente fase
     if (!this.editUser.id) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Pendiente',
-        detail: 'La creación de usuarios se conectará en la siguiente fase.',
-      });
+      if (!this.editUser.usuario?.trim()) return;
+      if (!this.editUser.telefono?.trim()) return;
+      if (!this.editUser.contrasenia?.trim()) return;
+
+      this.usersService
+        .addUser({
+          nombre_completo: this.editUser.nombre.trim(),
+          usuario: this.editUser.usuario.trim(),
+          email: this.editUser.email.trim(),
+          contrasenia: this.editUser.contrasenia,
+          telefono: this.editUser.telefono,
+          direccion: this.editUser.direccion?.trim() || undefined,
+          fecha_nacimiento: this.editUser.fecha_nacimiento?.trim() || undefined,
+          permisos_iniciales:
+            this.editUser.permisos?.length ? this.editUser.permisos : undefined,
+        })
+        .pipe(
+          catchError((err) => {
+            const msg =
+              err?.error?.data?.[0]?.message ?? 'No se pudo crear el usuario.';
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: msg,
+            });
+            return of(null);
+          }),
+        )
+        .subscribe((res) => {
+          if (!res) return;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Listo',
+            detail: res.data?.[0]?.message ?? 'Usuario creado correctamente.',
+          });
+          this.closeDialog();
+          this.loadUsers();
+        });
       return;
     }
 

@@ -1,4 +1,5 @@
 <div class="p-4">
+    <p-toast></p-toast>
     <div class="mb-5 flex align-items-center">
         <p-avatar icon="pi pi-user" size="xlarge" shape="circle" class="mr-3 p-avatar-xl"></p-avatar>
         <div>
@@ -14,6 +15,8 @@
                 <div class="flex gap-3 mt-3 md:mt-0">
                     <p-button label="Editar Perfil" icon="pi pi-user-edit" styleClass="p-button-outlined"
                         (onClick)="openEditDialog()"></p-button>
+                    <p-button label="Cambiar Contraseña" icon="pi pi-lock" styleClass="p-button-outlined"
+                        (onClick)="openPasswordDialog()"></p-button>
                     <p-button label="Dar de Baja" icon="pi pi-trash" severity="danger"
                         (onClick)="deleteAccount()"></p-button>
                 </div>
@@ -136,13 +139,13 @@
     <p-dialog [(visible)]="editDialogVisible" [style]="{width: '600px'}" header="Actualizar Datos del Perfil"
         [modal]="true" styleClass="p-fluid shadow-6" [dismissableMask]="true">
         <ng-template pTemplate="content">
-            <form [formGroup]="editForm" class="p-3">
+            <form [formGroup]="profileForm" class="p-3">
 
                 <div class="field mb-4">
                     <label for="fullName" class="font-bold mb-2 block">Nombre Completo</label>
                     <input type="text" pInputText id="fullName" formControlName="fullName" class="w-full p-3"
-                        [ngClass]="{'ng-invalid ng-dirty': submitted && editForm.get('fullName')?.errors}" />
-                    <small class="p-error block mt-2" *ngIf="submitted && editForm.get('fullName')?.errors">El nombre es
+                        [ngClass]="{'ng-invalid ng-dirty': submittedProfile && profileForm.get('fullName')?.errors}" />
+                    <small class="p-error block mt-2" *ngIf="submittedProfile && profileForm.get('fullName')?.errors">El nombre es
                         requerido.</small>
                 </div>
 
@@ -150,19 +153,19 @@
                     <div class="field col-12 md:col-6 mb-4">
                         <label for="username" class="font-bold mb-2 block">Usuario</label>
                         <input type="text" pInputText id="username" formControlName="username" class="w-full p-3"
-                            [ngClass]="{'ng-invalid ng-dirty': submitted && editForm.get('username')?.errors}" />
-                        <small class="p-error block mt-2" *ngIf="submitted && editForm.get('username')?.errors">El
+                            [ngClass]="{'ng-invalid ng-dirty': submittedProfile && profileForm.get('username')?.errors}" />
+                        <small class="p-error block mt-2" *ngIf="submittedProfile && profileForm.get('username')?.errors">El
                             usuario es requerido.</small>
                     </div>
                     <div class="field col-12 md:col-6 mb-4">
                         <label for="phone" class="font-bold mb-2 block">Teléfono</label>
                         <input type="text" pInputText id="phone" formControlName="phone" class="w-full p-3"
-                            [ngClass]="{'ng-invalid ng-dirty': submitted && editForm.get('phone')?.errors}" />
+                            [ngClass]="{'ng-invalid ng-dirty': submittedProfile && profileForm.get('phone')?.errors}" />
                         <small class="p-error block mt-2"
-                            *ngIf="submitted && editForm.get('phone')?.hasError('required')">El teléfono es
+                            *ngIf="submittedProfile && profileForm.get('phone')?.hasError('required')">El teléfono es
                             requerido.</small>
                         <small class="p-error block mt-2"
-                            *ngIf="submitted && editForm.get('phone')?.hasError('pattern')">Debe contener exactamente 10
+                            *ngIf="submittedProfile && profileForm.get('phone')?.hasError('pattern')">Debe contener exactamente 10
                             numéros.</small>
                     </div>
                 </div>
@@ -170,51 +173,24 @@
                 <div class="field mb-4">
                     <label for="email" class="font-bold mb-2 block">Correo Electrónico</label>
                     <input type="email" pInputText id="email" formControlName="email" class="w-full p-3"
-                        [ngClass]="{'ng-invalid ng-dirty': submitted && editForm.get('email')?.errors}" />
+                        [ngClass]="{'ng-invalid ng-dirty': submittedProfile && profileForm.get('email')?.errors}" />
                     <small class="p-error block mt-2"
-                        *ngIf="submitted && editForm.get('email')?.hasError('required')">El correo es requerido.</small>
+                        *ngIf="submittedProfile && profileForm.get('email')?.hasError('required')">El correo es requerido.</small>
                     <small class="p-error block mt-2"
-                        *ngIf="submitted && editForm.get('email')?.hasError('email')">Formato de correo
+                        *ngIf="submittedProfile && profileForm.get('email')?.hasError('email')">Formato de correo
                         inválido.</small>
                 </div>
 
                 <div class="field mb-4">
                     <label for="address" class="font-bold mb-2 block">Dirección</label>
                     <input type="text" pInputText id="address" formControlName="address" class="w-full p-3"
-                        [ngClass]="{'ng-invalid ng-dirty': submitted && editForm.get('address')?.errors}" />
-                    <small class="p-error block mt-2" *ngIf="submitted && editForm.get('address')?.errors">La dirección
-                        es requerida.</small>
+                        [ngClass]="{'ng-invalid ng-dirty': false}" />
                 </div>
 
                 <div class="field mb-4">
                     <label for="birthDate" class="font-bold mb-2 block">Fecha de Nacimiento</label>
                     <input type="date" pInputText id="birthDate" formControlName="birthDate" class="w-full p-3"
-                        [ngClass]="{'ng-invalid ng-dirty': submitted && editForm.get('birthDate')?.errors}" />
-                    <small class="p-error block mt-2" *ngIf="submitted && editForm.get('birthDate')?.errors">La fecha de
-                        nacimiento es requerida.</small>
-                </div>
-
-                <div class="formgrid grid">
-                    <div class="field col-12 md:col-6 mb-4">
-                        <label for="password" class="font-bold mb-2 block">Contraseña para Confirmar</label>
-                        <p-password id="password" formControlName="password" [toggleMask]="true" styleClass="w-full"
-                            inputStyleClass="w-full p-3"
-                            [ngClass]="{'ng-invalid ng-dirty': submitted && editForm.get('password')?.errors}"></p-password>
-                        <small class="p-error block mt-2"
-                            *ngIf="submitted && editForm.get('password')?.hasError('required')">Contraseña
-                            requerida.</small>
-                        <small class="p-error block mt-2"
-                            *ngIf="submitted && editForm.get('password')?.hasError('minlength')">Mínimo 6
-                            caracteres.</small>
-                    </div>
-                    <div class="field col-12 md:col-6 mb-4">
-                        <label for="confirmPassword" class="font-bold mb-2 block">Repetir Contraseña</label>
-                        <p-password id="confirmPassword" formControlName="confirmPassword" [toggleMask]="true"
-                            [feedback]="false" styleClass="w-full" inputStyleClass="w-full p-3"
-                            [ngClass]="{'ng-invalid ng-dirty': submitted && editForm.errors?.['mismatch']}"></p-password>
-                        <small class="p-error block mt-2" *ngIf="submitted && editForm.errors?.['mismatch']">Las
-                            contraseñas no coinciden.</small>
-                    </div>
+                        [ngClass]="{'ng-invalid ng-dirty': false}" />
                 </div>
 
             </form>
@@ -226,6 +202,43 @@
                     styleClass="p-button-secondary px-5 py-2"></p-button>
                 <p-button label="Actualizar Datos" icon="pi pi-check" (onClick)="saveProfile()"
                     styleClass="p-button-primary px-5 py-2"></p-button>
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Change Password Dialog -->
+    <p-dialog [(visible)]="passwordDialogVisible" [style]="{width: '520px'}" header="Cambiar Contraseña"
+        [modal]="true" styleClass="p-fluid shadow-6" [dismissableMask]="true">
+        <ng-template pTemplate="content">
+            <form [formGroup]="passwordForm" class="p-3">
+                <div class="field mb-4">
+                    <label class="font-bold mb-2 block">Contraseña actual *</label>
+                    <p-password formControlName="currentPassword" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full"></p-password>
+                    <small class="p-error block mt-2" *ngIf="submittedPassword && passwordForm.get('currentPassword')?.errors">Requerido.</small>
+                </div>
+
+                <div class="field mb-4">
+                    <label class="font-bold mb-2 block">Nueva contraseña *</label>
+                    <p-password formControlName="newPassword" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full"></p-password>
+                    <small class="p-error block mt-2" *ngIf="submittedPassword && passwordForm.get('newPassword')?.errors">
+                        Mínimo 10 caracteres (y símbolo, según backend).
+                    </small>
+                </div>
+
+                <div class="field mb-2">
+                    <label class="font-bold mb-2 block">Confirmar nueva contraseña *</label>
+                    <p-password formControlName="confirmNewPassword" [toggleMask]="true" [feedback]="false" styleClass="w-full" inputStyleClass="w-full"></p-password>
+                    <small class="p-error block mt-2" *ngIf="submittedPassword && passwordForm.errors?.['mismatch']">No coincide.</small>
+                </div>
+            </form>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <div class="flex justify-content-end gap-2 pt-2">
+                <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
+                    (onClick)="hidePasswordDialog()"></p-button>
+                <p-button label="Actualizar" icon="pi pi-check" severity="primary"
+                    (onClick)="changePassword()"></p-button>
             </div>
         </ng-template>
     </p-dialog>

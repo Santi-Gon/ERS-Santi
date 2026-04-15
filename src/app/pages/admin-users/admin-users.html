@@ -101,12 +101,12 @@
                     </div>
                 </div>
 
-                <!-- Campos extra para creación (fase siguiente: POST /users/add) -->
+                <!-- Campos extra para creación (POST /users/add) -->
                 <div *ngIf="editUser && !editUser.id" class="surface-50 border-1 border-round p-3 mb-4">
                     <div class="flex align-items-center gap-2 mb-3">
                         <i class="pi pi-info-circle text-color-secondary"></i>
                         <span class="text-sm text-color-secondary">
-                            Estos campos ya están listos en la UI, pero el guardado real se conectará en la siguiente fase.
+                            Completa los campos requeridos para crear al usuario.
                         </span>
                     </div>
 
@@ -114,14 +114,17 @@
                         <div class="field col-12 md:col-6">
                             <label class="font-bold mb-2 block">Usuario (username) *</label>
                             <input pInputText [(ngModel)]="editUser.usuario" class="w-full" placeholder="jperez" />
+                            <small class="p-error" *ngIf="submitted && !editUser.usuario">Requerido.</small>
                         </div>
                         <div class="field col-12 md:col-6">
                             <label class="font-bold mb-2 block">Teléfono (10 dígitos) *</label>
-                            <input pInputText [(ngModel)]="editUser.telefono" class="w-full" placeholder="5551234567" />
+                            <p-inputMask [(ngModel)]="editUser.telefono" mask="9999999999" class="w-full" placeholder="5551234567"></p-inputMask>
+                            <small class="p-error" *ngIf="submitted && !editUser.telefono">Requerido.</small>
                         </div>
                         <div class="field col-12">
                             <label class="font-bold mb-2 block">Contraseña temporal *</label>
-                            <input pInputText [(ngModel)]="editUser.contrasenia" class="w-full" placeholder="Min 10 + símbolo" />
+                            <p-password [(ngModel)]="editUser.contrasenia" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" placeholder="Min 10 + símbolo"></p-password>
+                            <small class="p-error" *ngIf="submitted && !editUser.contrasenia">Requerido.</small>
                         </div>
                         <div class="field col-12">
                             <label class="font-bold mb-2 block">Dirección (opcional)</label>
@@ -130,6 +133,15 @@
                         <div class="field col-12 md:col-6">
                             <label class="font-bold mb-2 block">Fecha de nacimiento (YYYY-MM-DD)</label>
                             <input pInputText [(ngModel)]="editUser.fecha_nacimiento" class="w-full" placeholder="1990-05-15" />
+                        </div>
+                        <div class="field col-12 md:col-6">
+                            <label class="font-bold mb-2 block">Permisos iniciales (opcional)</label>
+                            <p-multiSelect
+                                [options]="allPermissions"
+                                [(ngModel)]="editUser.permisos"
+                                defaultLabel="Seleccionar permisos"
+                                class="w-full">
+                            </p-multiSelect>
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -11,6 +11,10 @@ import { PasswordModule } from 'primeng/password';
 import { TagModule } from 'primeng/tag';
 import { TableModule } from 'primeng/table';
 import { DividerModule } from 'primeng/divider';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { UsersService } from '../../services/users.service';
+import { catchError, finalize, of } from 'rxjs';
 
 @Component({
   selector: 'app-user',
@@ -27,12 +31,18 @@ import { DividerModule } from 'primeng/divider';
     PasswordModule,
     TagModule,
     TableModule,
-    DividerModule
+    DividerModule,
+    ToastModule
   ],
+  providers: [MessageService],
   templateUrl: './user.html',
   styleUrl: './user.css',
 })
 export class User implements OnInit {
+  private usersService = inject(UsersService);
+  private messageService = inject(MessageService);
+  private fb = inject(FormBuilder);
+
   userInfo = {
     username: 'admin2026',
     fullName: 'Juan Pérez',
@@ -71,85 +81,212 @@ export class User implements OnInit {
     return p === 'Alta' ? 'danger' : p === 'Media' ? 'warn' : 'success';
   }
 
+  // Dialogs
   editDialogVisible: boolean = false;
-  editForm!: FormGroup;
-  submitted: boolean = false;
+  passwordDialogVisible: boolean = false;
+  submittedProfile: boolean = false;
+  submittedPassword: boolean = false;
 
-  constructor(private fb: FormBuilder) {}
+  // Forms
+  profileForm!: FormGroup;
+  passwordForm!: FormGroup;
+
+  loadingProfile: boolean = false;
+  savingProfile: boolean = false;
+  savingPassword: boolean = false;
 
   ngOnInit() {
-    this.initForm();
+    this.initForms();
+    this.loadMe();
   }
 
-  initForm() {
-    this.editForm = this.fb.group({
+  initForms() {
+    this.profileForm = this.fb.group({
       fullName: ['', [Validators.required]],
       username: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      address: ['', [Validators.required]],
-      birthDate: ['', [Validators.required]],
+      address: [''],
+      birthDate: [''],
       phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
-    }, {
-      validators: this.passwordMatchValidator
     });
+
+    this.passwordForm = this.fb.group(
+      {
+        currentPassword: ['', [Validators.required]],
+        newPassword: ['', [Validators.required, Validators.minLength(10)]],
+        confirmNewPassword: ['', [Validators.required]],
+      },
+      { validators: this.passwordMatchValidator },
+    );
   }
 
   passwordMatchValidator(frm: FormGroup) {
-    return frm.controls['password'].value === frm.controls['confirmPassword'].value 
+    // usada solo para passwordForm (new/confirm)
+    return frm.controls['newPassword']?.value === frm.controls['confirmNewPassword']?.value
       ? null : { 'mismatch': true };
   }
 
+  private recomputeInitialsAndAge() {
+    const name = this.userInfo.fullName?.trim() || 'Usuario';
+    const parts = name.split(' ').map(s => s.trim()).filter(Boolean);
+    this.userInfo.initials = parts.length > 1
+      ? (parts[0][0] + parts[1][0]).toUpperCase()
+      : name.substring(0, 2).toUpperCase();
+
+    if (this.userInfo.birthDate) {
+      const birthYear = new Date(this.userInfo.birthDate).getFullYear();
+      const currentYear = new Date().getFullYear();
+      this.userInfo.age = currentYear - birthYear;
+    }
+  }
+
+  loadMe() {
+    this.loadingProfile = true;
+    this.usersService
+      .getMe()
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ?? 'No se pudo cargar tu perfil.';
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+          return of({ statusCode: 500, intOpCode: 1, data: [] as any[] });
+        }),
+        finalize(() => (this.loadingProfile = false)),
+      )
+      .subscribe((res) => {
+        const me = res.data?.[0];
+        if (!me) return;
+        this.userInfo.username = me.usuario;
+        this.userInfo.fullName = me.nombre_completo;
+        this.userInfo.email = me.email;
+        this.userInfo.address = me.direccion ?? '';
+        this.userInfo.birthDate = me.fecha_nacimiento ?? '';
+        this.userInfo.phone = me.telefono ?? '';
+        this.recomputeInitialsAndAge();
+      });
+  }
+
   openEditDialog() {
-    this.editForm.patchValue({
+    this.profileForm.patchValue({
       fullName: this.userInfo.fullName,
       username: this.userInfo.username,
       email: this.userInfo.email,
       address: this.userInfo.address,
       birthDate: this.userInfo.birthDate,
       phone: this.userInfo.phone,
-      password: '',
-      confirmPassword: ''
     });
-    this.submitted = false;
+    this.submittedProfile = false;
     this.editDialogVisible = true;
+  }
+
+  openPasswordDialog() {
+    this.passwordForm.reset({
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: '',
+    });
+    this.submittedPassword = false;
+    this.passwordDialogVisible = true;
   }
 
   hideDialog() {
     this.editDialogVisible = false;
-    this.submitted = false;
+    this.submittedProfile = false;
+  }
+
+  hidePasswordDialog() {
+    this.passwordDialogVisible = false;
+    this.submittedPassword = false;
   }
 
   saveProfile() {
-    this.submitted = true;
+    this.submittedProfile = true;
+    if (this.profileForm.invalid) return;
 
-    if (this.editForm.valid) {
-      const formValues = this.editForm.value;
-      
-      // Update local userInfo
-      this.userInfo.fullName = formValues.fullName;
-      this.userInfo.username = formValues.username;
-      this.userInfo.email = formValues.email;
-      this.userInfo.address = formValues.address;
-      this.userInfo.birthDate = formValues.birthDate;
-      this.userInfo.phone = formValues.phone;
+    const v = this.profileForm.value;
+    this.savingProfile = true;
+    this.usersService
+      .updateMe({
+        nombre_completo: v.fullName,
+        usuario: v.username,
+        email: v.email,
+        direccion: v.address || undefined,
+        fecha_nacimiento: v.birthDate || undefined,
+        telefono: v.phone,
+      })
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ?? 'No se pudo actualizar tu perfil.';
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+          return of(null);
+        }),
+        finalize(() => (this.savingProfile = false)),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: res.data?.[0]?.message ?? 'Perfil actualizado.',
+        });
+        this.editDialogVisible = false;
+        this.submittedProfile = false;
+        this.loadMe();
+      });
+  }
 
-      // Recalculate age based on new birthDate
-      const birthYear = new Date(formValues.birthDate).getFullYear();
-      const currentYear = new Date().getFullYear();
-      this.userInfo.age = currentYear - birthYear;
+  changePassword() {
+    this.submittedPassword = true;
+    if (this.passwordForm.invalid) return;
 
-      this.editDialogVisible = false;
-      this.submitted = false;
-    }
+    const v = this.passwordForm.value;
+    this.savingPassword = true;
+    this.usersService
+      .updateMyPassword({
+        contrasenia_actual: v.currentPassword,
+        nueva_contrasenia: v.newPassword,
+      })
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ?? 'No se pudo cambiar la contraseña.';
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+          return of(null);
+        }),
+        finalize(() => (this.savingPassword = false)),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: res.data?.[0]?.message ?? 'Contraseña actualizada.',
+        });
+        this.passwordDialogVisible = false;
+        this.submittedPassword = false;
+      });
   }
 
   deleteAccount() {
-    // Simulated delete logic
-    if (confirm('¿Estás seguro de que deseas dar de baja tu cuenta? Esta acción no se puede deshacer.')) {
-      alert('Tu cuenta ha sido dada de baja localmente (Simulación).');
-      // Here you would typically redirect logic or clear session
-    }
+    if (!confirm('¿Estás seguro de que deseas dar de baja tu cuenta? Esta acción no se puede deshacer.')) return;
+    this.usersService
+      .deactivateMe()
+      .pipe(
+        catchError((err) => {
+          const msg =
+            err?.error?.data?.[0]?.message ?? 'No se pudo dar de baja tu cuenta.';
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+          return of(null);
+        }),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: res.data?.[0]?.message ?? 'Cuenta dada de baja.',
+        });
+      });
   }
 }

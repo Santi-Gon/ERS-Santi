@@ -53,6 +53,17 @@ export interface UpdatePasswordPayload {
   nueva_contrasenia: string;
 }
 
+export interface CreateUserPayload {
+  nombre_completo: string;
+  usuario: string;
+  email: string;
+  contrasenia: string;
+  telefono: string;
+  direccion?: string;
+  fecha_nacimiento?: string;
+  permisos_iniciales?: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class UsersService {
   private http = inject(HttpClient);
@@ -88,6 +99,10 @@ export class UsersService {
 
   deleteUserAdmin(userId: string): Observable<ApiEnvelope<any>> {
     return this.http.delete<ApiEnvelope<any>>(`${this.baseUrl}/${userId}`);
+  }
+
+  addUser(payload: CreateUserPayload): Observable<ApiEnvelope<any>> {
+    return this.http.post<ApiEnvelope<any>>(`${this.baseUrl}/add`, payload);
   }
 }
 
