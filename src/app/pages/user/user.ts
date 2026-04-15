@@ -12,6 +12,7 @@ import { TagModule } from 'primeng/tag';
 import { TableModule } from 'primeng/table';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService } from 'primeng/api';
 import { UsersService } from '../../services/users.service';
 import { TicketsService } from '../../services/tickets.service';
@@ -34,7 +35,8 @@ import { catchError, finalize, of, forkJoin } from 'rxjs';
     TagModule,
     TableModule,
     DividerModule,
-    ToastModule
+    ToastModule,
+    ProgressSpinnerModule
   ],
   providers: [MessageService],
   templateUrl: './user.html',
@@ -93,6 +95,7 @@ export class User implements OnInit {
   loadingProfile: boolean = false;
   savingProfile: boolean = false;
   savingPassword: boolean = false;
+  isLoadingMyTickets: boolean = true;
 
   ngOnInit() {
     this.initForms();
@@ -169,10 +172,12 @@ export class User implements OnInit {
   }
 
   loadAssignedTickets() {
+    this.isLoadingMyTickets = true;
     this.groupsService.getMyGroups().pipe(catchError(() => of({data: []}))).subscribe((res: any) => {
        const groups = res.data || [];
        if (!groups.length) {
           this.assignedTickets = [];
+          this.isLoadingMyTickets = false;
           return;
        }
        const requests = groups.map((g: any) => 
@@ -200,6 +205,7 @@ export class User implements OnInit {
              });
           });
           this.assignedTickets = myTickets;
+          this.isLoadingMyTickets = false;
        });
     });
   }

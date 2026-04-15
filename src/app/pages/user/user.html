@@ -65,6 +65,7 @@
     <p-divider styleClass="my-5"></p-divider>
     <h2 class="text-2xl font-bold mb-4">Mis Tickets</h2>
 
+    <ng-container *ngIf="!isLoadingMyTickets; else loadingTicketsTpl">
     <div class="grid mb-5">
         <div class="col-12 md:col-4">
             <p-card styleClass="shadow-2 text-center">
@@ -134,6 +135,14 @@
             </ng-template>
         </p-table>
     </p-card>
+    </ng-container>
+
+    <ng-template #loadingTicketsTpl>
+        <div class="flex flex-column align-items-center justify-content-center p-6">
+            <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4"></p-progressSpinner>
+            <p class="text-secondary mt-4 font-normal text-lg">Cargando tus tickets asignados...</p>
+        </div>
+    </ng-template>
 
     <!-- Edit Profile Dialog Form -->
     <p-dialog [(visible)]="editDialogVisible" [style]="{width: '600px'}" header="Actualizar Datos del Perfil"

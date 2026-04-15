@@ -5,6 +5,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PermissionService } from '../../services/permission.service';
 import { GroupsService } from '../../services/groups.service';
 import { UsersService } from '../../services/users.service';
@@ -14,7 +15,7 @@ import { catchError, of, forkJoin } from 'rxjs';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TagModule, DividerModule],
+  imports: [CommonModule, CardModule, ButtonModule, TagModule, DividerModule, ProgressSpinnerModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -31,6 +32,7 @@ export class Home implements OnInit {
   lowPriorityCount = 0;
   assignedTicketsCount = 0;
   isMaster = false;
+  isLoading = true;
 
   // Real user ID UUID
   currentUserId: string = '';
@@ -97,6 +99,7 @@ export class Home implements OnInit {
         } else {
           this.allTickets = [];
           this.calculateStats();
+          this.isLoading = false;
         }
       });
   }
@@ -121,6 +124,7 @@ export class Home implements OnInit {
           }));
           
           this.calculateStats();
+          this.isLoading = false;
       });
   }
 
