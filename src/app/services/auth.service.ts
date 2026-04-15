@@ -24,13 +24,18 @@ export class AuthService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/auth`;
   private readonly TOKEN_KEY = 'ers_token';
+  private readonly USER_KEY = 'ers_user';
 
   login(identifier: string, contrasenia: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { identifier, contrasenia }).pipe(
       tap(res => {
         const token = res.data?.[0]?.access_token;
+        const user = res.data?.[0]?.user;
         if (token) {
           this.setToken(token);
+        }
+        if (user) {
+          this.setCurrentUser(user);
         }
       })
     );
@@ -53,9 +58,24 @@ export class AuthService {
     }
   }
 
+  getCurrentUser(): any {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(this.USER_KEY);
+      if (stored) return JSON.parse(stored);
+    }
+    return null;
+  }
+
+  setCurrentUser(user: any): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    }
+  }
+
   logout(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
     }
   }
 
@@ -63,3 +83,4 @@ export class AuthService {
     return !!this.getToken();
   }
 }
+
