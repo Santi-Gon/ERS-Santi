@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -55,21 +55,22 @@ export interface AppGroup {
 export class Group implements OnInit {
   private groupsService = inject(GroupsService);
   private messageService = inject(MessageService);
-  private cdr = inject(ChangeDetectorRef);
 
   groups: AppGroup[] = [];
   group!: AppGroup;
   
   groupDialog: boolean = false;
   submitted: boolean = false;
+  savingGroup: boolean = false;
   totalCount = 0;
   loading: boolean = false;
-  isLoadingPage: boolean = true;
+  isLoadingPage = signal(true);
 
   // Add Member Dialog states
   addMemberDialog: boolean = false;
   newMemberEmail: string = '';
   addMemberSubmitted: boolean = false;
+  savingMember: boolean = false;
   selectedGroupForMember: AppGroup | null = null;
 
   ngOnInit() {
@@ -94,8 +95,7 @@ export class Group implements OnInit {
         }),
         finalize(() => {
           this.loading = false;
-          this.isLoadingPage = false;
-          this.cdr.detectChanges();
+          this.isLoadingPage.set(false);
         }),
       )
       .subscribe((res) => {
@@ -160,6 +160,7 @@ export class Group implements OnInit {
   hideDialog() {
     this.groupDialog = false;
     this.submitted = false;
+    this.savingGroup = false;
   }
 
   saveGroup() {
@@ -167,6 +168,7 @@ export class Group implements OnInit {
 
     if (!this.group.nombre?.trim()) return;
 
+    this.savingGroup = true;
     const payload = {
       nombre: this.group.nombre.trim(),
       descripcion: this.group.descripcion?.trim() || undefined,
@@ -187,6 +189,7 @@ export class Group implements OnInit {
             });
             return of(null);
           }),
+          finalize(() => this.savingGroup = false)
         )
         .subscribe((res) => {
           if (!res) return;
@@ -216,6 +219,7 @@ export class Group implements OnInit {
           });
           return of(null);
         }),
+        finalize(() => this.savingGroup = false)
       )
       .subscribe((res) => {
         if (!res) return;
@@ -242,6 +246,7 @@ export class Group implements OnInit {
     this.addMemberDialog = false;
     this.newMemberEmail = '';
     this.addMemberSubmitted = false;
+    this.savingMember = false;
     this.selectedGroupForMember = null;
   }
 
@@ -251,6 +256,7 @@ export class Group implements OnInit {
     if (!this.newMemberEmail?.trim().includes('@')) return;
     if (!this.selectedGroupForMember || !this.selectedGroupForMember.id) return;
 
+    this.savingMember = true;
     const payload = { email: this.newMemberEmail.trim() };
 
     this.groupsService
@@ -267,6 +273,7 @@ export class Group implements OnInit {
           });
           return of(null);
         }),
+        finalize(() => this.savingMember = false)
       )
       .subscribe((res) => {
         if (!res) return;

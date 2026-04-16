@@ -175,12 +175,12 @@
                 <ng-container *appHasPermission="['users_add']">
                     <p-button *ngIf="editUser && !editUser.id"
                         label="Guardar" icon="pi pi-check" severity="primary"
-                        (onClick)="saveUser()"></p-button>
+                        (onClick)="saveUser()" [loading]="savingUser"></p-button>
                 </ng-container>
                 <ng-container *appHasPermission="['users_edit']">
                     <p-button *ngIf="editUser && !!editUser.id"
                         label="Guardar" icon="pi pi-check" severity="primary"
-                        (onClick)="saveUser()"></p-button>
+                        (onClick)="saveUser()" [loading]="savingUser"></p-button>
                 </ng-container>
             </div>
         </ng-template>
@@ -247,7 +247,7 @@
                     <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
                         (onClick)="closePermDialog()"></p-button>
                     <p-button label="Guardar Permisos" icon="pi pi-check" severity="primary"
-                        (onClick)="savePerms()"></p-button>
+                        (onClick)="savePerms()" [loading]="savingPerms"></p-button>
                 </div>
             </div>
         </ng-template>

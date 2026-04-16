@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -69,7 +69,6 @@ export class GroupTickets implements OnInit {
   private messageService = inject(MessageService);
   private usersService = inject(UsersService);
   private groupsService = inject(GroupsService);
-  private cdr = inject(ChangeDetectorRef);
 
   groupId!: string; // Backend usa UUID (string) pero supongamos que lo extraemos de la URL. Si la URL tenia numeros, esto es string.
   groupName: string = '';
@@ -118,7 +117,8 @@ export class GroupTickets implements OnInit {
 
   tickets: Ticket[] = [];
   loading = false;
-  isLoadingPage = true;
+  savingTicket = false;
+  isLoadingPage = signal(true);
   private pendingRequests = 0;
 
   // ── Stats ──────────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ export class GroupTickets implements OnInit {
     this.groupId = this.route.snapshot.paramMap.get('id') || '';
     this.groupName = `Cargando...`;
     
-    this.isLoadingPage = true;
+    this.isLoadingPage.set(true);
     this.pendingRequests = 3;
 
     this.loadGroupDetails();
@@ -178,8 +178,7 @@ export class GroupTickets implements OnInit {
   private decrementPending() {
     this.pendingRequests--;
     if (this.pendingRequests <= 0) {
-      this.isLoadingPage = false;
-      this.cdr.detectChanges();
+      this.isLoadingPage.set(false);
     }
   }
 
@@ -320,12 +319,13 @@ export class GroupTickets implements OnInit {
     this.ticketDialog = true;
   }
 
-  closeDialog() { this.ticketDialog = false; this.submitted = false; }
+  closeDialog() { this.ticketDialog = false; this.submitted = false; this.savingTicket = false; }
 
   saveTicket() {
     this.submitted = true;
     if (!this.editTicket.titulo?.trim()) return;
 
+    this.savingTicket = true;
     if (!this.editTicket.id || this.editTicket.id === '') {
       // Create
       const payload = {
@@ -342,7 +342,8 @@ export class GroupTickets implements OnInit {
         catchError(err => {
           this.messageService.add({severity: 'error', detail: err.error?.data?.[0]?.message || 'Error al crear', summary: 'Error'});
           return of(null);
-        })
+        }),
+        finalize(() => this.savingTicket = false)
       ).subscribe(res => {
         if(res) {
           this.messageService.add({severity: 'success', detail: 'Ticket creado'});
@@ -364,7 +365,8 @@ export class GroupTickets implements OnInit {
         catchError(err => {
           this.messageService.add({severity: 'error', detail: err.error?.data?.[0]?.message || 'Error al actualizar', summary: 'Error'});
           return of(null);
-        })
+        }),
+        finalize(() => this.savingTicket = false)
       ).subscribe(res => {
         if(res) {
           this.messageService.add({severity: 'success', detail: 'Ticket actualizado'});

@@ -1,6 +1,6 @@
 <div class="tickets-container">
     <p-toast></p-toast>
-    <ng-container *ngIf="!isLoadingPage; else loadingTpl">
+    <ng-container *ngIf="!isLoadingPage(); else loadingTpl">
 
     <!-- ══ Header ══════════════════════════════════════════════════════════ -->
     <div class="flex align-items-center gap-3 mb-5">
@@ -462,7 +462,7 @@
                         (onClick)="closeDialog()"></p-button>
                     <p-button *ngIf="isEditing || (editTicket && editTicket.id === '')"
                         label="Guardar" icon="pi pi-check" severity="primary"
-                        (onClick)="saveTicket()"></p-button>
+                        (onClick)="saveTicket()" [loading]="savingTicket"></p-button>
                 </div>
             </div>
         </ng-template>

@@ -74,6 +74,7 @@ export class AdminUsers implements OnInit {
   isEditing: boolean = false;
   submitted: boolean = false;
   loading: boolean = false;
+  savingUser: boolean = false;
 
   allPermissions = ALL_PERMISSIONS;
 
@@ -86,6 +87,7 @@ export class AdminUsers implements OnInit {
 
   // Permissions dialog state
   permDialog: boolean = false;
+  savingPerms: boolean = false;
   permUser!: AppUser;
   tempPerms: Set<string> = new Set();
 
@@ -149,15 +151,18 @@ export class AdminUsers implements OnInit {
     this.userDialog = true;
   }
 
-  closeDialog() { this.userDialog = false; this.submitted = false; }
+  closeDialog() { this.userDialog = false; this.submitted = false; this.savingUser = false; }
 
   saveUser() {
     this.submitted = true;
     if (!this.editUser.nombre.trim() || !this.editUser.email.trim()) return;
+    
+    this.savingUser = true;
+
     if (!this.editUser.id) {
-      if (!this.editUser.usuario?.trim()) return;
-      if (!this.editUser.telefono?.trim()) return;
-      if (!this.editUser.contrasenia?.trim()) return;
+      if (!this.editUser.usuario?.trim()) { this.savingUser = false; return; }
+      if (!this.editUser.telefono?.trim()) { this.savingUser = false; return; }
+      if (!this.editUser.contrasenia?.trim()) { this.savingUser = false; return; }
 
       this.usersService
         .addUser({
@@ -182,6 +187,7 @@ export class AdminUsers implements OnInit {
             });
             return of(null);
           }),
+          finalize(() => this.savingUser = false)
         )
         .subscribe((res) => {
           if (!res) return;
@@ -316,6 +322,7 @@ export class AdminUsers implements OnInit {
   }
 
   savePerms() {
+    this.savingPerms = true;
     const updated = Array.from(this.tempPerms);
     this.usersService
       .updatePermissions(this.permUser.id, updated)
@@ -331,6 +338,7 @@ export class AdminUsers implements OnInit {
           });
           return of(null);
         }),
+        finalize(() => this.savingPerms = false)
       )
       .subscribe((res) => {
         if (!res) return;
@@ -346,5 +354,5 @@ export class AdminUsers implements OnInit {
       });
   }
 
-  closePermDialog() { this.permDialog = false; }
+  closePermDialog() { this.permDialog = false; this.savingPerms = false; }
 }

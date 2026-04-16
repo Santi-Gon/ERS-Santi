@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
@@ -25,7 +25,6 @@ export class Home implements OnInit {
   private groupsService = inject(GroupsService);
   private usersService = inject(UsersService);
   private ticketsService = inject(TicketsService);
-  private cdr = inject(ChangeDetectorRef);
 
   // Stats
   highPriorityCount = 0;
@@ -33,7 +32,7 @@ export class Home implements OnInit {
   lowPriorityCount = 0;
   assignedTicketsCount = 0;
   isMaster = false;
-  isLoading = true;
+  isLoading = signal(true);
 
   // Real user ID UUID
   currentUserId: string = '';
@@ -100,8 +99,7 @@ export class Home implements OnInit {
         } else {
           this.allTickets = [];
           this.calculateStats();
-          this.isLoading = false;
-          this.cdr.detectChanges();
+          this.isLoading.set(false);
         }
       });
   }
@@ -124,10 +122,8 @@ export class Home implements OnInit {
               priority: b.prioridad?.nombre || 'Media',
               groupId: b.grupo_id
           }));
-          
           this.calculateStats();
-          this.isLoading = false;
-          this.cdr.detectChanges();
+          this.isLoading.set(false);
       });
   }
 

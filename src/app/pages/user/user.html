@@ -65,7 +65,7 @@
     <p-divider styleClass="my-5"></p-divider>
     <h2 class="text-2xl font-bold mb-4">Mis Tickets</h2>
 
-    <ng-container *ngIf="!isLoadingMyTickets; else loadingTicketsTpl">
+    <ng-container *ngIf="!isLoadingMyTickets(); else loadingTicketsTpl">
     <div class="grid mb-5">
         <div class="col-12 md:col-4">
             <p-card styleClass="shadow-2 text-center">
@@ -209,7 +209,7 @@
             <div class="flex justify-content-center gap-3 pt-4 pb-2 w-full">
                 <p-button label="Cancelar" icon="pi pi-times" [text]="true" (onClick)="hideDialog()"
                     styleClass="p-button-secondary px-5 py-2"></p-button>
-                <p-button label="Actualizar Datos" icon="pi pi-check" (onClick)="saveProfile()"
+                <p-button label="Actualizar Datos" icon="pi pi-check" (onClick)="saveProfile()" [loading]="savingProfile"
                     styleClass="p-button-primary px-5 py-2"></p-button>
             </div>
         </ng-template>
@@ -247,7 +247,7 @@
                 <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
                     (onClick)="hidePasswordDialog()"></p-button>
                 <p-button label="Actualizar" icon="pi pi-check" severity="primary"
-                    (onClick)="changePassword()"></p-button>
+                    (onClick)="changePassword()" [loading]="savingPassword"></p-button>
             </div>
         </ng-template>
     </p-dialog>

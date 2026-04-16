@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -48,7 +48,6 @@ export class User implements OnInit {
   private groupsService = inject(GroupsService);
   private messageService = inject(MessageService);
   private fb = inject(FormBuilder);
-  private cdr = inject(ChangeDetectorRef);
 
   currentUserId: string = '';
 
@@ -96,7 +95,7 @@ export class User implements OnInit {
   loadingProfile: boolean = false;
   savingProfile: boolean = false;
   savingPassword: boolean = false;
-  isLoadingMyTickets: boolean = true;
+  isLoadingMyTickets = signal(true);
 
   ngOnInit() {
     this.initForms();
@@ -159,9 +158,9 @@ export class User implements OnInit {
       .subscribe((res) => {
         const me = res.data?.[0];
         if (!me) {
-          this.cdr.detectChanges();
           return;
         }
+        
         this.currentUserId = me.id;
         this.userInfo.username = me.usuario;
         this.userInfo.fullName = me.nombre_completo;
@@ -170,21 +169,19 @@ export class User implements OnInit {
         this.userInfo.birthDate = me.fecha_nacimiento ?? '';
         this.userInfo.phone = me.telefono ?? '';
         this.recomputeInitialsAndAge();
-        this.cdr.detectChanges();
 
         this.loadAssignedTickets();
       });
   }
 
   loadAssignedTickets() {
-    this.isLoadingMyTickets = true;
+    this.isLoadingMyTickets.set(true);
     this.groupsService.getMyGroups().pipe(catchError(() => of({data: []}))).subscribe((res: any) => {
        const groups = res.data || [];
        if (!groups.length) {
-          this.assignedTickets = [];
-          this.isLoadingMyTickets = false;
-          this.cdr.detectChanges();
-          return;
+         this.assignedTickets = [];
+         this.isLoadingMyTickets.set(false);
+         return;
        }
        const requests = groups.map((g: any) => 
            this.ticketsService.getTicketsByGroup(g.id).pipe(
@@ -210,9 +207,9 @@ export class User implements OnInit {
                 });
              });
           });
+
           this.assignedTickets = myTickets;
-          this.isLoadingMyTickets = false;
-          this.cdr.detectChanges();
+          this.isLoadingMyTickets.set(false);
        });
     });
   }
@@ -243,11 +240,13 @@ export class User implements OnInit {
   hideDialog() {
     this.editDialogVisible = false;
     this.submittedProfile = false;
+    this.savingProfile = false;
   }
 
   hidePasswordDialog() {
     this.passwordDialogVisible = false;
     this.submittedPassword = false;
+    this.savingPassword = false;
   }
 
   saveProfile() {
