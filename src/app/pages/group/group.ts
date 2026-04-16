@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -14,6 +14,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { AvatarGroupModule } from 'primeng/avatargroup';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService } from 'primeng/api';
 import { GroupsService } from '../../services/groups.service';
 import { catchError, finalize, of } from 'rxjs';
@@ -44,6 +45,7 @@ export interface AppGroup {
     AvatarGroupModule,
     DividerModule,
     ToastModule,
+    ProgressSpinnerModule,
     HasPermissionDirective
   ],
   providers: [MessageService],
@@ -53,6 +55,7 @@ export interface AppGroup {
 export class Group implements OnInit {
   private groupsService = inject(GroupsService);
   private messageService = inject(MessageService);
+  private cdr = inject(ChangeDetectorRef);
 
   groups: AppGroup[] = [];
   group!: AppGroup;
@@ -61,6 +64,7 @@ export class Group implements OnInit {
   submitted: boolean = false;
   totalCount = 0;
   loading: boolean = false;
+  isLoadingPage: boolean = true;
 
   // Add Member Dialog states
   addMemberDialog: boolean = false;
@@ -88,7 +92,11 @@ export class Group implements OnInit {
           });
           return of({ statusCode: 500, intOpCode: 1, data: [] as any[] });
         }),
-        finalize(() => (this.loading = false)),
+        finalize(() => {
+          this.loading = false;
+          this.isLoadingPage = false;
+          this.cdr.detectChanges();
+        }),
       )
       .subscribe((res) => {
         const rows = res.data ?? [];

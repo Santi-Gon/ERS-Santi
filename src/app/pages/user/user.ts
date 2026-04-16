@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -48,6 +48,7 @@ export class User implements OnInit {
   private groupsService = inject(GroupsService);
   private messageService = inject(MessageService);
   private fb = inject(FormBuilder);
+  private cdr = inject(ChangeDetectorRef);
 
   currentUserId: string = '';
 
@@ -157,7 +158,10 @@ export class User implements OnInit {
       )
       .subscribe((res) => {
         const me = res.data?.[0];
-        if (!me) return;
+        if (!me) {
+          this.cdr.detectChanges();
+          return;
+        }
         this.currentUserId = me.id;
         this.userInfo.username = me.usuario;
         this.userInfo.fullName = me.nombre_completo;
@@ -166,6 +170,7 @@ export class User implements OnInit {
         this.userInfo.birthDate = me.fecha_nacimiento ?? '';
         this.userInfo.phone = me.telefono ?? '';
         this.recomputeInitialsAndAge();
+        this.cdr.detectChanges();
 
         this.loadAssignedTickets();
       });
@@ -178,6 +183,7 @@ export class User implements OnInit {
        if (!groups.length) {
           this.assignedTickets = [];
           this.isLoadingMyTickets = false;
+          this.cdr.detectChanges();
           return;
        }
        const requests = groups.map((g: any) => 
@@ -206,6 +212,7 @@ export class User implements OnInit {
           });
           this.assignedTickets = myTickets;
           this.isLoadingMyTickets = false;
+          this.cdr.detectChanges();
        });
     });
   }

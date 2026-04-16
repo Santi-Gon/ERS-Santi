@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -69,6 +69,7 @@ export class GroupTickets implements OnInit {
   private messageService = inject(MessageService);
   private usersService = inject(UsersService);
   private groupsService = inject(GroupsService);
+  private cdr = inject(ChangeDetectorRef);
 
   groupId!: string; // Backend usa UUID (string) pero supongamos que lo extraemos de la URL. Si la URL tenia numeros, esto es string.
   groupName: string = '';
@@ -178,6 +179,7 @@ export class GroupTickets implements OnInit {
     this.pendingRequests--;
     if (this.pendingRequests <= 0) {
       this.isLoadingPage = false;
+      this.cdr.detectChanges();
     }
   }
 
