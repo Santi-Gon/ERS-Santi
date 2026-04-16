@@ -311,6 +311,10 @@ export class AdminUsers implements OnInit {
     }
   }
 
+  selectAllPerms() {
+    this.allPermissions.forEach(p => this.tempPerms.add(p));
+  }
+
   savePerms() {
     const updated = Array.from(this.tempPerms);
     this.usersService

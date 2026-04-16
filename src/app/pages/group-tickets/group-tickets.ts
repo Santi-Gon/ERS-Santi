@@ -14,6 +14,7 @@ import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { DividerModule } from 'primeng/divider';
 import { ChipModule } from 'primeng/chip';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import { PermissionService } from '../../services/permission.service';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
@@ -53,6 +54,7 @@ const CURRENT_USER = 'Juan Pérez';
     CardModule, ButtonModule, TagModule, TableModule,
     DialogModule, InputTextModule, TextareaModule, SelectModule,
     TooltipModule, DividerModule, ChipModule, ToastModule,
+    ProgressSpinnerModule,
     HasPermissionDirective
   ],
   providers: [MessageService],
@@ -115,6 +117,8 @@ export class GroupTickets implements OnInit {
 
   tickets: Ticket[] = [];
   loading = false;
+  isLoadingPage = true;
+  private pendingRequests = 0;
 
   // ── Stats ──────────────────────────────────────────────────────────────
   get totalTickets()    { return this.filteredTickets.length; }
@@ -160,15 +164,27 @@ export class GroupTickets implements OnInit {
 
   ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('id') || '';
-    this.groupName = `Grupo ${this.groupId}`;
+    this.groupName = `Cargando...`;
+    
+    this.isLoadingPage = true;
+    this.pendingRequests = 3;
+
     this.loadGroupDetails();
     this.loadTickets();
     this.loadUsersOptions();
   }
 
+  private decrementPending() {
+    this.pendingRequests--;
+    if (this.pendingRequests <= 0) {
+      this.isLoadingPage = false;
+    }
+  }
+
   loadGroupDetails() {
     this.groupsService.getGrupoById(this.groupId).pipe(
-      catchError(() => of(null))
+      catchError(() => of(null)),
+      finalize(() => this.decrementPending())
     ).subscribe((res: any) => {
       if (res && res.data && res.data.length > 0) {
           const g = res.data[0];
@@ -184,7 +200,8 @@ export class GroupTickets implements OnInit {
 
   loadUsersOptions() {
     this.usersService.getAllUsers().pipe(
-      catchError(() => of({ data: [] }))
+      catchError(() => of({ data: [] })),
+      finalize(() => this.decrementPending())
     ).subscribe((res: any) => {
       this.allUsers = res.data ?? [];
       this.buildMiembroOptions();
@@ -208,7 +225,10 @@ export class GroupTickets implements OnInit {
         this.messageService.add({severity: 'error', detail: 'No se pudieron cargar los tickets'});
         return of([]);
       }),
-      finalize(() => this.loading = false)
+      finalize(() => {
+        this.loading = false;
+        this.decrementPending();
+      })
     ).subscribe((res: any) => {
       const data = res.data ?? [];
       this.tickets = data.map((b: any) => ({

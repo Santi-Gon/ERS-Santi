@@ -195,6 +195,10 @@
         <ng-template pTemplate="content">
             <div class="p-3" *ngIf="permUser">
 
+                <div class="flex justify-content-end mb-4">
+                    <p-button label="Seleccionar Todos" icon="pi pi-check-square" size="small" [outlined]="true" (onClick)="selectAllPerms()"></p-button>
+                </div>
+
                 <ng-container *ngFor="let group of permGroups; let last = last">
                     <!-- Group heading -->
                     <div class="flex align-items-center gap-2 mb-3">

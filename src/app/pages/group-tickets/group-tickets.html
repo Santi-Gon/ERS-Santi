@@ -1,5 +1,6 @@
 <div class="tickets-container">
     <p-toast></p-toast>
+    <ng-container *ngIf="!isLoadingPage; else loadingTpl">
 
     <!-- ══ Header ══════════════════════════════════════════════════════════ -->
     <div class="flex align-items-center gap-3 mb-5">
@@ -349,6 +350,14 @@
         </div>
 
     </div>
+    </ng-container>
+
+    <ng-template #loadingTpl>
+        <div class="flex flex-column align-items-center justify-content-center p-8 mt-8">
+            <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4"></p-progressSpinner>
+            <p class="text-secondary mt-4 font-normal text-lg">Cargando tablero del grupo...</p>
+        </div>
+    </ng-template>
 
     <!-- ══ TICKET DIALOG ════════════════════════════════════════════════════ -->
     <p-dialog [(visible)]="ticketDialog"
