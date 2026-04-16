@@ -151,12 +151,16 @@
                         <td>{{ t.fechaLimite   | date:'dd/MM/yyyy' }}</td>
                         <td class="text-center" (click)="$event.stopPropagation()">
                             <div class="flex justify-content-center gap-1">
-                                <p-button *appHasPermission="['ticket_edit']"
-                                    icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true"
-                                    pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
-                                <p-button *appHasPermission="['ticket_delete']"
-                                    icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true"
-                                    pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
+                                <ng-container *appHasPermission="['ticket_edit']">
+                                    <p-button *ngIf="canEditStatus(t)"
+                                        icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true"
+                                        pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
+                                </ng-container>
+                                <ng-container *appHasPermission="['ticket_delete']">
+                                    <p-button *ngIf="canEditFull(t)"
+                                        icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true"
+                                        pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
+                                </ng-container>
                             </div>
                         </td>
                     </tr>
@@ -370,7 +374,7 @@
 
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Título *</label>
-                    <input pInputText [(ngModel)]="editTicket.titulo" [disabled]="!isEditing && editTicket.id !== ''"
+                    <input pInputText [(ngModel)]="editTicket.titulo" [disabled]="!isEditing || !canEditFull(editTicket)"
                         [ngClass]="{'ng-invalid ng-dirty': submitted && !editTicket.titulo}"
                         class="w-full" placeholder="Título del ticket" />
                     <small class="p-error" *ngIf="submitted && !editTicket.titulo">El título es requerido.</small>
@@ -379,7 +383,7 @@
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Descripción</label>
                     <textarea pTextarea [(ngModel)]="editTicket.descripcion"
-                        [disabled]="!isEditing && editTicket.id !== ''"
+                        [disabled]="!isEditing || !canEditFull(editTicket)"
                         rows="3" class="w-full" placeholder="Describe el ticket..."></textarea>
                 </div>
 
@@ -388,14 +392,14 @@
                         <label class="font-bold mb-2 block">Estado</label>
                         <p-select [(ngModel)]="editTicket.estado" [options]="estadoOptions"
                             optionLabel="label" optionValue="value"
-                            [disabled]="!isEditing && editTicket.id !== ''"
+                            [disabled]="!isEditing || !canEditStatus(editTicket)"
                             styleClass="w-full"></p-select>
                     </div>
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Prioridad</label>
                         <p-select [(ngModel)]="editTicket.prioridad" [options]="prioridadOptions"
                             optionLabel="label" optionValue="value"
-                            [disabled]="!isEditing && editTicket.id !== ''"
+                            [disabled]="!isEditing || !canEditFull(editTicket)"
                             styleClass="w-full"></p-select>
                     </div>
                 </div>
@@ -404,7 +408,7 @@
                     <label class="font-bold mb-2 block">Asignado a *</label>
                     <p-select [(ngModel)]="editTicket.asignadoId" [options]="miembroOptions"
                         optionLabel="label" optionValue="value"
-                        [disabled]="!isEditing && editTicket.id !== ''"
+                        [disabled]="!isEditing || !canEditFull(editTicket)"
                         [ngClass]="{'ng-invalid ng-dirty': submitted && !editTicket.asignadoId}"
                         styleClass="w-full" placeholder="Selecciona un miembro"></p-select>
                     <small class="p-error" *ngIf="submitted && !editTicket.asignadoId">El responsable es requerido.</small>
@@ -420,14 +424,14 @@
                     <div class="field col-12 md:col-6">
                         <label class="font-bold mb-2 block">Fecha Límite</label>
                         <input pInputText type="date" [(ngModel)]="editTicket.fechaLimite"
-                            [disabled]="!isEditing && editTicket.id !== ''" class="w-full" />
+                            [disabled]="!isEditing || !canEditFull(editTicket)" class="w-full" />
                     </div>
                 </div>
 
                 <div class="field mb-5">
                     <label class="font-bold mb-2 block">Comentarios</label>
                     <textarea pTextarea [(ngModel)]="editTicket.comentariosText"
-                        [disabled]="!isEditing && editTicket.id !== ''"
+                        [disabled]="!isEditing || !canEditStatus(editTicket)"
                         rows="2" class="w-full" placeholder="Comentarios adicionales..."></textarea>
                 </div>
 
@@ -448,19 +452,19 @@
         <ng-template pTemplate="footer">
             <div class="flex justify-content-between align-items-center w-full pt-2">
                 <ng-container *appHasPermission="['ticket_delete']">
-                    <p-button *ngIf="editTicket && editTicket.id !== ''"
+                    <p-button *ngIf="editTicket && editTicket.id !== '' && canEditFull(editTicket)"
                         icon="pi pi-trash" label="Eliminar" severity="danger" [text]="true"
                         (onClick)="deleteTicket(editTicket)"></p-button>
                 </ng-container>
                 <div class="flex gap-2 ml-auto">
                     <ng-container *appHasPermission="['ticket_edit']">
-                        <p-button *ngIf="editTicket && editTicket.id !== '' && !isEditing"
+                        <p-button *ngIf="editTicket && editTicket.id !== '' && !isEditing && canEditStatus(editTicket)"
                             icon="pi pi-pencil" label="Editar" severity="info" [outlined]="true"
                             (onClick)="isEditing = true"></p-button>
                     </ng-container>
                     <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
                         (onClick)="closeDialog()"></p-button>
-                    <p-button *ngIf="isEditing || (editTicket && editTicket.id === '')"
+                    <p-button *ngIf="(isEditing || (editTicket && editTicket.id === '')) && canEditStatus(editTicket)"
                         label="Guardar" icon="pi pi-check" severity="primary"
                         (onClick)="saveTicket()" [loading]="savingTicket"></p-button>
                 </div>

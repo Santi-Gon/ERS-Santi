@@ -108,6 +108,8 @@ export class GroupTickets implements OnInit {
   miembroOptions: { label: string, value: string }[] = [];
   allUsers: any[] | null = null;
   groupMemberNames: string[] | null = null;
+  currentUserId: string | null = null;
+  isAdmin: boolean = false;
 
   private groupsMap: Record<string, string> = {
     '101': 'Desarrollo Frontend',
@@ -173,6 +175,14 @@ export class GroupTickets implements OnInit {
     this.loadGroupDetails();
     this.loadTickets();
     this.loadUsersOptions();
+    
+    // Obtener información del usuario actual para reglas
+    this.usersService.getMe().subscribe((res) => {
+      if (res && res.data && res.data.length > 0) {
+        this.currentUserId = res.data[0].id;
+        this.isAdmin = this.permissionService.hasPermission('users_delete'); // Asumimos users_delete como super admin
+      }
+    });
   }
 
   private decrementPending() {
@@ -276,7 +286,17 @@ export class GroupTickets implements OnInit {
 
   onDrop(event: DragEvent, newEstado: string) {
     event.preventDefault();
-    if (this.draggingTicket && this.draggingTicket.estado !== newEstado) {
+    if (!this.draggingTicket) return;
+
+    // Regla de Negocio: Sólo admin, autor o asignado pueden mover estados
+    if (!this.canEditStatus(this.draggingTicket)) {
+      this.messageService.add({severity:'error', summary:'Denegado', detail: 'No tienes permiso para mover este ticket.'});
+      this.draggingTicket = null;
+      this.dropTargetColumn = null;
+      return;
+    }
+
+    if (this.draggingTicket.estado !== newEstado) {
       const ticketId = this.draggingTicket.id;
       // Actualizamos localmente para fluidez visual rápida
       const idx = this.tickets.findIndex(t => t.id === ticketId);
@@ -299,6 +319,16 @@ export class GroupTickets implements OnInit {
   }
 
   // ── Dialog ─────────────────────────────────────────────────────────────
+  canEditFull(ticket: Ticket): boolean {
+    if (!ticket || ticket.id === '') return true; // Si es nuevo, puede
+    return this.isAdmin || (this.currentUserId !== null && this.currentUserId === ticket.autorId);
+  }
+
+  canEditStatus(ticket: Ticket): boolean {
+    if (!ticket || ticket.id === '') return true;
+    return this.canEditFull(ticket) || (this.currentUserId !== null && this.currentUserId === ticket.asignadoId);
+  }
+
   openNew() {
     this.isEditing = true;
     this.submitted = false;
