@@ -31,6 +31,7 @@ import { PermissionService } from '../../../services/permission.service';
 export class Login {
   formularioLogin: FormGroup;
   cargando: boolean = false;
+  logoClickCount: number = 0;
   
   private authService = inject(AuthService);
   private permissionService = inject(PermissionService);
@@ -44,6 +45,14 @@ export class Login {
       usuario: ['', Validators.required],
       contrasenia: ['', Validators.required]
     });
+  }
+
+  onLogoClick() {
+    this.logoClickCount++;
+    if (this.logoClickCount === 5) {
+      this.messageService.add({ severity: 'info', summary: '¡Sorpresa!', detail: 'catch u', life: 3000 });
+      this.logoClickCount = 0; // reset
+    }
   }
 
   iniciarSesion() {

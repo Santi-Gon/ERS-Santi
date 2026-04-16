@@ -1,6 +1,11 @@
 <p-toast></p-toast>
 <div class="flex justify-content-center align-items-center min-h-screen">
-    <p-card header="Inicio de Sesión" [style]="{ width: '400px' }">
+    <p-card [style]="{ width: '400px' }">
+        <div class="text-center mb-4">
+            <i class="pi pi-bolt text-primary text-6xl cursor-pointer" style="transition: transform 0.2s; cursor: pointer;" (click)="onLogoClick()" title="Logo ERPJir"></i>
+            <h2 class="mt-2 mb-0">ERPJir</h2>
+            <p class="text-color-secondary mt-1 mb-0">Inicio de Sesión</p>
+        </div>
         <form [formGroup]="formularioLogin" (ngSubmit)="iniciarSesion()" class="flex flex-column gap-3">
             <div class="flex flex-column gap-2">
                 <label for="usuario">Usuario</label>

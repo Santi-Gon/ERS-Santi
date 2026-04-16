@@ -197,8 +197,9 @@
                 (drop)="onDrop($event, 'pendiente')">
                 <div *ngIf="kanbanPendiente.length === 0" class="empty-col">Sin tickets</div>
                 <ng-container *ngFor="let t of kanbanPendiente; let last = last">
-                    <div class="kanban-ticket-card border-left-3 border-400 cursor-grab"
-                        draggable="true"
+                    <div class="kanban-ticket-card border-left-3 border-400"
+                        [class.cursor-grab]="canEditStatus(t)"
+                        [draggable]="canEditStatus(t)"
                         (dragstart)="onDragStart(t)"
                         (click)="openTicket(t, false)">
                         <div class="kanban-ticket-title">{{ t.titulo }}</div>
@@ -215,8 +216,12 @@
                             <span class="ml-auto">Límite: {{ t.fechaLimite | date:'dd/MM' }}</span>
                         </div>
                         <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
-                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
-                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
+                            <ng-container *appHasPermission="['ticket_edit']">
+                                <p-button *ngIf="canEditStatus(t)" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
+                            </ng-container>
+                            <ng-container *appHasPermission="['ticket_delete']">
+                                <p-button *ngIf="canEditFull(t)" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
+                            </ng-container>
                         </div>
                     </div>
                     <p-divider *ngIf="!last" styleClass="my-1"></p-divider>
@@ -240,8 +245,9 @@
                 (drop)="onDrop($event, 'en progreso')">
                 <div *ngIf="kanbanEnProgreso.length === 0" class="empty-col">Sin tickets</div>
                 <ng-container *ngFor="let t of kanbanEnProgreso; let last = last">
-                    <div class="kanban-ticket-card border-left-3 border-blue-400 cursor-grab"
-                        draggable="true"
+                    <div class="kanban-ticket-card border-left-3 border-blue-400"
+                        [class.cursor-grab]="canEditStatus(t)"
+                        [draggable]="canEditStatus(t)"
                         (dragstart)="onDragStart(t)"
                         (click)="openTicket(t, false)">
                         <div class="kanban-ticket-title">{{ t.titulo }}</div>
@@ -283,8 +289,9 @@
                 (drop)="onDrop($event, 'revisión')">
                 <div *ngIf="kanbanRevision.length === 0" class="empty-col">Sin tickets</div>
                 <ng-container *ngFor="let t of kanbanRevision; let last = last">
-                    <div class="kanban-ticket-card border-left-3 border-yellow-400 cursor-grab"
-                        draggable="true"
+                    <div class="kanban-ticket-card border-left-3 border-yellow-400"
+                        [class.cursor-grab]="canEditStatus(t)"
+                        [draggable]="canEditStatus(t)"
                         (dragstart)="onDragStart(t)"
                         (click)="openTicket(t, false)">
                         <div class="kanban-ticket-title">{{ t.titulo }}</div>
@@ -301,8 +308,12 @@
                             <span class="ml-auto">Límite: {{ t.fechaLimite | date:'dd/MM' }}</span>
                         </div>
                         <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
-                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
-                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
+                            <ng-container *appHasPermission="['ticket_edit']">
+                                <p-button *ngIf="canEditStatus(t)" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
+                            </ng-container>
+                            <ng-container *appHasPermission="['ticket_delete']">
+                                <p-button *ngIf="canEditFull(t)" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
+                            </ng-container>
                         </div>
                     </div>
                     <p-divider *ngIf="!last" styleClass="my-1"></p-divider>
@@ -326,8 +337,9 @@
                 (drop)="onDrop($event, 'finalizada')">
                 <div *ngIf="kanbanFinalizada.length === 0" class="empty-col">Sin tickets</div>
                 <ng-container *ngFor="let t of kanbanFinalizada; let last = last">
-                    <div class="kanban-ticket-card border-left-3 border-green-400 cursor-grab"
-                        draggable="true"
+                    <div class="kanban-ticket-card border-left-3 border-green-400"
+                        [class.cursor-grab]="canEditStatus(t)"
+                        [draggable]="canEditStatus(t)"
                         (dragstart)="onDragStart(t)"
                         (click)="openTicket(t, false)">
                         <div class="kanban-ticket-title">{{ t.titulo }}</div>
@@ -344,8 +356,12 @@
                             <span class="ml-auto">Límite: {{ t.fechaLimite | date:'dd/MM' }}</span>
                         </div>
                         <div class="flex justify-content-end gap-1 mt-2" (click)="$event.stopPropagation()">
-                            <p-button *appHasPermission="['ticket_edit']" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
-                            <p-button *appHasPermission="['ticket_delete']" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
+                            <ng-container *appHasPermission="['ticket_edit']">
+                                <p-button *ngIf="canEditStatus(t)" icon="pi pi-pencil" [text]="true" severity="info" [rounded]="true" pTooltip="Editar" (onClick)="openTicket(t, true)"></p-button>
+                            </ng-container>
+                            <ng-container *appHasPermission="['ticket_delete']">
+                                <p-button *ngIf="canEditFull(t)" icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true" pTooltip="Eliminar" (onClick)="deleteTicket(t)"></p-button>
+                            </ng-container>
                         </div>
                     </div>
                     <p-divider *ngIf="!last" styleClass="my-1"></p-divider>

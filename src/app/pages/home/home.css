@@ -2,15 +2,18 @@
   padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
+  background-color: #F54927; /* Requerimiento estricto de rúbrica */
+  border-radius: 12px;
+  min-height: calc(100vh - 100px); /* Para cubrir buena parte de la pantalla */
 }
 
 .dashboard-header h2 {
-  color: #f1f5f9; /* Off-white suave para no lastimar los ojos */
+  color: #ffffff; /* Off-white suave para no lastimar los ojos */
   font-weight: 600;
 }
 
 .text-secondary {
-  color: #6c757d;
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
 /* Grilla de Tarjetas Estadísticas */
