@@ -22,6 +22,25 @@ export interface BackendGroupRow {
   creado_en: string;
 }
 
+export interface GroupPermissionMember {
+  id: string;
+  nombre_completo: string;
+  email: string | null;
+  permission_names: string[];
+}
+
+export interface GroupPermissionOption {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+}
+
+export interface GroupPermissionsResponse {
+  grupo: { id: string; nombre: string };
+  available_permissions: GroupPermissionOption[];
+  members: GroupPermissionMember[];
+}
+
 export interface CreateGroupPayload {
   nombre: string;
   descripcion?: string;
@@ -59,6 +78,23 @@ export class GroupsService {
 
   addMember(groupId: string, payload: { email: string }): Observable<ApiEnvelope<any>> {
     return this.http.post<ApiEnvelope<any>>(`${this.baseUrl}/${groupId}/miembros`, payload);
+  }
+
+  getGroupMemberPermissions(groupId: string): Observable<ApiEnvelope<GroupPermissionsResponse>> {
+    return this.http.get<ApiEnvelope<GroupPermissionsResponse>>(
+      `${this.baseUrl}/${groupId}/permisos-miembros`,
+    );
+  }
+
+  updateGroupMemberPermissions(
+    groupId: string,
+    memberId: string,
+    permissionNames: string[],
+  ): Observable<ApiEnvelope<any>> {
+    return this.http.patch<ApiEnvelope<any>>(
+      `${this.baseUrl}/${groupId}/miembros/${memberId}/permisos`,
+      { permission_names: permissionNames },
+    );
   }
 }
 

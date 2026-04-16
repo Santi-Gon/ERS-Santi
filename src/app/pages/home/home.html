@@ -86,9 +86,19 @@
                     </p>
 
                     <ng-template pTemplate="footer">
-                        <p-button label="Ver Detalles y Tickets" icon="pi pi-arrow-right" iconPos="right"
-                            styleClass="w-full" [outlined]="true" (onClick)="goToGroupDetails(group.id)">
-                        </p-button>
+                        <div class="flex flex-column gap-2">
+                            <p-button label="Ver Detalles y Tickets" icon="pi pi-arrow-right" iconPos="right"
+                                styleClass="w-full" [outlined]="true" (onClick)="goToGroupDetails(group.id)">
+                            </p-button>
+                            <p-button *ngIf="group.creatorId === currentUserId"
+                                label="Gestionar permisos internos"
+                                icon="pi pi-shield"
+                                severity="secondary"
+                                styleClass="w-full"
+                                [outlined]="true"
+                                (onClick)="goToGroupPermissions(group.id)">
+                            </p-button>
+                        </div>
                     </ng-template>
                 </p-card>
             </ng-container>

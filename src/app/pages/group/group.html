@@ -65,6 +65,14 @@
                     <!-- Actions -->
                     <ng-template pTemplate="footer">
                         <div class="flex justify-content-end gap-2 mt-3 pt-3 border-top-1 border-300">
+                            <p-button
+                                *ngIf="canManageGroupPermissions(g)"
+                                icon="pi pi-shield"
+                                [text]="true"
+                                severity="secondary"
+                                (onClick)="openManagePermissionsDialog(g)"
+                                pTooltip="Gestionar permisos internos"
+                                tooltipPosition="top"></p-button>
                             <!-- Add Member Button -->
                             <p-button *appHasPermission="['groups_edit']" icon="pi pi-user-plus" [text]="true"
                                 severity="success" (onClick)="openAddMemberDialog(g)" pTooltip="Añadir Miembro" tooltipPosition="top"></p-button>
@@ -148,4 +156,87 @@
             </div>
         </ng-template>
     </p-dialog>
+
+    <p-dialog
+        [(visible)]="managePermissionsDialog"
+        [style]="{ width: '760px' }"
+        header="Permisos internos del grupo"
+        [modal]="true"
+        styleClass="p-fluid shadow-6"
+        [dismissableMask]="true"
+        (onHide)="closeManagePermissionsDialog()">
+        <ng-template pTemplate="content">
+            <div class="p-2" *ngIf="!permissionsLoading; else permissionsLoadingTpl">
+                <p class="text-color-secondary mt-0 mb-3">
+                    Define permisos contextuales por integrante (solo permisos de tickets).
+                </p>
+
+                <div *ngIf="memberPermissionRows.length === 0" class="text-color-secondary">
+                    No hay integrantes para gestionar.
+                </div>
+
+                <div *ngFor="let m of memberPermissionRows" class="mb-4 p-3 border-1 border-300 border-round">
+                    <div class="flex justify-content-between align-items-start gap-3 mb-2">
+                        <div>
+                            <strong>{{ m.nombre_completo }}</strong>
+                            <div class="text-sm text-color-secondary">{{ m.email || 'Sin email' }}</div>
+                        </div>
+                        <p-button
+                            label="Guardar"
+                            icon="pi pi-save"
+                            size="small"
+                            [disabled]="!canEditMemberPermissions(m) || permissionsSaving"
+                            [loading]="permissionsSaving"
+                            (onClick)="saveMemberPermissions(m)">
+                        </p-button>
+                    </div>
+
+                    <div class="mb-2">
+                        <button
+                            type="button"
+                            class="p-button p-component p-button-text p-button-sm"
+                            [disabled]="!canEditMemberPermissions(m)"
+                            (click)="toggleAllPermissions(m, !isAllSelected(m))">
+                            <span class="p-button-label">
+                                {{ isAllSelected(m) ? 'Quitar todos' : 'Seleccionar todos' }}
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="grid">
+                        <div
+                            *ngFor="let p of availablePermissionOptions"
+                            class="col-12 md:col-6 flex align-items-start gap-2 mb-2">
+                            <input
+                                type="checkbox"
+                                [id]="'perm-' + m.id + '-' + p.nombre"
+                                [disabled]="!canEditMemberPermissions(m)"
+                                [checked]="m.selected_permissions.includes(p.nombre)"
+                                (change)="togglePermission(m, p.nombre, $any($event.target).checked)" />
+                            <label [for]="'perm-' + m.id + '-' + p.nombre">
+                                <strong>{{ p.nombre }}</strong>
+                                <span class="text-sm text-color-secondary"> - {{ p.descripcion || 'Sin descripción' }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <small *ngIf="!canEditMemberPermissions(m)" class="p-error">
+                        Como creador del grupo no puedes editar tus propios permisos.
+                    </small>
+                </div>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <div class="flex justify-content-end">
+                <p-button label="Cerrar" icon="pi pi-times" [text]="true" (onClick)="closeManagePermissionsDialog()"></p-button>
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <ng-template #permissionsLoadingTpl>
+        <div class="flex flex-column align-items-center justify-content-center p-5">
+            <p-progressSpinner styleClass="w-3rem h-3rem" strokeWidth="4"></p-progressSpinner>
+            <p class="text-secondary mt-3">Cargando permisos del grupo...</p>
+        </div>
+    </ng-template>
 </div>

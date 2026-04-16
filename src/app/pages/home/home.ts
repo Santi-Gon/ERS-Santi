@@ -42,6 +42,7 @@ export class Home implements OnInit {
     name: string;
     description: string;
     membersCount: number;
+    creatorId: string | null;
   }> = [];
 
   allTickets: any[] = [];
@@ -92,6 +93,7 @@ export class Home implements OnInit {
           name: g.nombre,
           description: g.descripcion ?? 'Sin descripción',
           membersCount: g.integrantes ?? 0,
+          creatorId: g.creador_id ?? null,
         }));
         
         if (this.myGroups.length > 0) {
@@ -129,5 +131,9 @@ export class Home implements OnInit {
 
   goToGroupDetails(groupId: string) {
     this.router.navigate(['/group', groupId, 'tickets']);
+  }
+
+  goToGroupPermissions(groupId: string) {
+    this.router.navigate(['/group'], { queryParams: { managePermissions: groupId } });
   }
 }
