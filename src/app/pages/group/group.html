@@ -123,6 +123,8 @@
                         [(ngModel)]="selectedLeaderId"
                         optionLabel="label"
                         optionValue="value"
+                        appendTo="body"
+                        [panelStyle]="{ 'max-height': '220px', 'overflow': 'auto' }"
                         placeholder="Selecciona un integrante"
                         styleClass="w-full">
                     </p-select>
