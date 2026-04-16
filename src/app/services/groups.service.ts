@@ -72,6 +72,12 @@ export class GroupsService {
     return this.http.patch<ApiEnvelope<any>>(`${this.baseUrl}/${groupId}`, payload);
   }
 
+  updateLider(groupId: string, usuarioId: string): Observable<ApiEnvelope<any>> {
+    return this.http.patch<ApiEnvelope<any>>(`${this.baseUrl}/${groupId}/lider`, {
+      usuario_id: usuarioId,
+    });
+  }
+
   deleteGroup(groupId: string): Observable<ApiEnvelope<any>> {
     return this.http.delete<ApiEnvelope<any>>(`${this.baseUrl}/${groupId}`);
   }

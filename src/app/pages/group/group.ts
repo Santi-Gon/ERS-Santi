@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 
 import { TagModule } from 'primeng/tag';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
@@ -53,6 +54,7 @@ interface GroupPermissionMemberVM {
     DialogModule, 
     ButtonModule, 
     InputTextModule, 
+    SelectModule,
     ChipModule,
     AvatarModule,
     AvatarGroupModule,
@@ -98,6 +100,10 @@ export class Group implements OnInit {
   permissionsSaving = false;
   availablePermissionOptions: Array<{ nombre: string; descripcion: string | null }> = [];
   memberPermissionRows: GroupPermissionMemberVM[] = [];
+  leaderOptions: Array<{ label: string; value: string }> = [];
+  selectedLeaderId: string | null = null;
+  private editingSnapshot: { nombre: string; descripcion: string; lider_id: string | null } | null =
+    null;
 
   ngOnInit() {
     this.isGlobalAdmin = this.permissionService.hasPermission('users_delete');
@@ -172,6 +178,26 @@ export class Group implements OnInit {
 
   editGroup(g: AppGroup) {
     this.group = { ...g };
+    this.selectedLeaderId = g.lider_id ?? null;
+    this.editingSnapshot = {
+      nombre: g.nombre ?? '',
+      descripcion: g.descripcion ?? '',
+      lider_id: g.lider_id ?? null,
+    };
+    this.leaderOptions = [];
+    if (this.isGlobalAdmin && g.id) {
+      this.groupsService
+        .getGroupMemberPermissions(g.id)
+        .pipe(catchError(() => of(null)))
+        .subscribe((res: any) => {
+          const payload = res?.data?.[0];
+          const members = payload?.members ?? [];
+          this.leaderOptions = members.map((m: any) => ({
+            label: m.nombre_completo,
+            value: m.id,
+          }));
+        });
+    }
     this.groupDialog = true;
   }
 
@@ -208,6 +234,9 @@ export class Group implements OnInit {
     this.groupDialog = false;
     this.submitted = false;
     this.savingGroup = false;
+    this.leaderOptions = [];
+    this.selectedLeaderId = null;
+    this.editingSnapshot = null;
   }
 
   saveGroup() {
@@ -222,33 +251,82 @@ export class Group implements OnInit {
     };
 
     if (this.group.id) {
-      this.groupsService
-        .updateGroup(this.group.id, payload)
-        .pipe(
-          catchError((err) => {
-            const msg =
-              err?.error?.data?.[0]?.message ??
-              'No se pudo actualizar el grupo.';
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: msg,
-            });
-            return of(null);
-          }),
-          finalize(() => this.savingGroup = false)
-        )
-        .subscribe((res) => {
-          if (!res) return;
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Listo',
-            detail: res.data?.[0]?.message ?? 'Grupo actualizado correctamente.',
-          });
-          this.groupDialog = false;
-          this.group = {};
-          this.loadGroups();
+      const previous = this.editingSnapshot;
+      const nextNombre = payload.nombre ?? '';
+      const nextDescripcion = payload.descripcion ?? '';
+      const hasGroupChanges =
+        !previous ||
+        nextNombre !== previous.nombre ||
+        nextDescripcion !== previous.descripcion;
+      const hasLeaderChange =
+        this.isGlobalAdmin &&
+        !!this.selectedLeaderId &&
+        this.selectedLeaderId !== previous?.lider_id;
+
+      const onDone = (okMessage?: string) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: okMessage ?? 'Grupo actualizado correctamente.',
         });
+        this.groupDialog = false;
+        this.group = {};
+        this.hideDialog();
+        this.loadGroups();
+      };
+
+      const applyLeaderUpdateIfNeeded = () => {
+        if (!hasLeaderChange || !this.selectedLeaderId) {
+          this.savingGroup = false;
+          onDone();
+          return;
+        }
+        this.groupsService
+          .updateLider(this.group.id!, this.selectedLeaderId)
+          .pipe(
+            catchError((err) => {
+              const msg =
+                err?.error?.data?.[0]?.message ??
+                'No se pudo actualizar el líder del grupo.';
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: msg,
+              });
+              return of(null);
+            }),
+          )
+          .subscribe((leaderRes) => {
+            this.savingGroup = false;
+            if (!leaderRes) return;
+            onDone(leaderRes.data?.[0]?.message ?? 'Grupo y líder actualizados correctamente.');
+          });
+      };
+
+      if (hasGroupChanges) {
+        this.groupsService
+          .updateGroup(this.group.id, payload)
+          .pipe(
+            catchError((err) => {
+              const msg =
+                err?.error?.data?.[0]?.message ??
+                'No se pudo actualizar el grupo.';
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: msg,
+              });
+              this.savingGroup = false;
+              return of(null);
+            }),
+          )
+          .subscribe((groupRes) => {
+            if (!groupRes) return;
+            applyLeaderUpdateIfNeeded();
+          });
+      } else {
+        applyLeaderUpdateIfNeeded();
+      }
       return;
     }
 

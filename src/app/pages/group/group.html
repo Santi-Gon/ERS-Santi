@@ -114,6 +114,22 @@
                     <textarea id="descripcion" pInputText [(ngModel)]="group.descripcion" rows="3"
                         class="w-full p-3"></textarea>
                 </div>
+
+                <div class="field mb-3" *ngIf="isGlobalAdmin && group.id">
+                    <label for="liderSelect" class="font-bold mb-2 block">Líder del grupo</label>
+                    <p-select
+                        inputId="liderSelect"
+                        [options]="leaderOptions"
+                        [(ngModel)]="selectedLeaderId"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Selecciona un integrante"
+                        styleClass="w-full">
+                    </p-select>
+                    <small class="text-color-secondary block mt-2">
+                        Solo administradores globales pueden cambiar el líder.
+                    </small>
+                </div>
             </div>
         </ng-template>
 
